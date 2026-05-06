@@ -24,7 +24,7 @@ A full-stack rental marketplace platform where users can list items for rent, di
 
 ## 📋 Features
 
-### ✅ Completed (Tasks 1 & 2)
+### ✅ Completed (Tasks 1, 2 & 3)
 
 #### Frontend (Task 1)
 - 🎨 Complete UI with all pages and routing
@@ -48,19 +48,26 @@ A full-stack rental marketplace platform where users can list items for rent, di
 - 🔌 API placeholder routes
 - 📚 Comprehensive documentation
 
+#### Authentication System (Task 3) ✅
+- 🔐 User registration with validation
+- 🔑 Login with JWT tokens (HTTP-only cookies)
+- 🚪 Logout functionality
+- 📧 Password reset via email
+- ⏰ "Remember Me" feature (30 days vs 30 minutes)
+- ⏱️ Inactivity timeout (30 minutes)
+- 🛡️ Bcrypt password hashing (cost factor 10)
+- ✅ 19/19 backend tests passing
+- 🔒 Secure authentication with HTTP-only cookies
+- 🚫 Email enumeration prevention
+- 👤 Account deactivation support
+
 ### 🚧 In Progress
 
-#### Authentication System (Task 3)
-- User registration with validation
-- Login with JWT tokens
-- Logout functionality
-- Password reset via email
-- "Remember Me" feature
-- Inactivity timeout
+**Next up: Task 4 - Listings CRUD API**
 
 ### 📅 Upcoming Features
 
-- **Task 4**: Listings CRUD API
+- **Task 4**: Listings CRUD API & Frontend Wiring
 - **Task 5**: Rentals & Payments
 - **Task 6**: Real-Time Chat & AI Chatbot
 - **Task 7**: Reviews, Q&A & Complaints
@@ -238,4 +245,4 @@ This project is for educational purposes.
 
 ---
 
-**Status**: 🚧 In Development - Tasks 1 & 2 Complete, Task 3 In Progress
+**Status**: 🚀 Active Development - Tasks 1, 2 & 3 Complete (Authentication System Live!)
