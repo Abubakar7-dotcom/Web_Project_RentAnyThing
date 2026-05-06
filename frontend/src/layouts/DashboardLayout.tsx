@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Grid, TrendingUp, PlusCircle, Info, Settings, Menu, ShoppingCart, X } from 'lucide-react';
+import { Home, Grid, TrendingUp, PlusCircle, Calendar, Info, Settings, Menu, ShoppingCart, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
@@ -21,6 +21,7 @@ export function DashboardLayout() {
     { icon: Grid, label: 'Categories', path: '/app/categories' },
     { icon: TrendingUp, label: 'Popular', path: '/app/popular' },
     { icon: PlusCircle, label: 'Rent Out', path: '/app/rent-out' },
+    { icon: Calendar, label: 'My Rentals', path: '/app/rentals' },
     { icon: Info, label: 'About', path: '/app/about' },
     { icon: Settings, label: 'Settings', path: '/app/settings' },
   ];

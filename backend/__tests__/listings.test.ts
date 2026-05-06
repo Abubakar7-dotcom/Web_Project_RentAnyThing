@@ -13,15 +13,94 @@ describe('Listings API', () => {
   let listingId: string;
 
   beforeAll(async () => {
-    // Clean up test data
-    await prisma.listing.deleteMany();
-    await prisma.user.deleteMany();
+    // Clean up test data in correct order to respect foreign key constraints
+    // Use where clause to only delete test data from this suite
+    await prisma.payment.deleteMany({
+      where: {
+        rental: {
+          listing: {
+            owner: {
+              email: {
+                in: ['user@test.com', 'admin@test.com', 'other@test.com']
+              }
+            }
+          }
+        }
+      }
+    });
+    await prisma.rental.deleteMany({
+      where: {
+        listing: {
+          owner: {
+            email: {
+              in: ['user@test.com', 'admin@test.com', 'other@test.com']
+            }
+          }
+        }
+      }
+    });
+    await prisma.listing.deleteMany({
+      where: {
+        owner: {
+          email: {
+            in: ['user@test.com', 'admin@test.com', 'other@test.com']
+          }
+        }
+      }
+    });
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          in: ['user@test.com', 'admin@test.com', 'other@test.com']
+        }
+      }
+    });
   });
 
   beforeEach(async () => {
     // Clean up and recreate test users for each test to avoid race conditions
-    await prisma.listing.deleteMany();
-    await prisma.user.deleteMany();
+    // Delete in correct order to respect foreign key constraints
+    // Use where clause to only delete test data from this suite
+    await prisma.payment.deleteMany({
+      where: {
+        rental: {
+          listing: {
+            owner: {
+              email: {
+                in: ['user@test.com', 'admin@test.com', 'other@test.com']
+              }
+            }
+          }
+        }
+      }
+    });
+    await prisma.rental.deleteMany({
+      where: {
+        listing: {
+          owner: {
+            email: {
+              in: ['user@test.com', 'admin@test.com', 'other@test.com']
+            }
+          }
+        }
+      }
+    });
+    await prisma.listing.deleteMany({
+      where: {
+        owner: {
+          email: {
+            in: ['user@test.com', 'admin@test.com', 'other@test.com']
+          }
+        }
+      }
+    });
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          in: ['user@test.com', 'admin@test.com', 'other@test.com']
+        }
+      }
+    });
 
     // Create test users
     const user = await prisma.user.create({
@@ -50,6 +129,8 @@ describe('Listings API', () => {
 
   afterAll(async () => {
     // Clean up test data
+    await prisma.payment.deleteMany();
+    await prisma.rental.deleteMany();
     await prisma.listing.deleteMany();
     await prisma.user.deleteMany();
     await prisma.$disconnect();

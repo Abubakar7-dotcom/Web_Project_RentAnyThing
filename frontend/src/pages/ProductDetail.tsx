@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Calendar } from 'lucide-react';
 import { StarRating } from '../components/StarRating';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { getListing, type Listing } from '../services/listingService';
+import { rentalService } from '../services/rentalService';
+import { calculateDays } from '../utils/calculateDays';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [listing, setListing] = useState<Listing | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
+  const [showRentalForm, setShowRentalForm] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [isSubmittingRental, setIsSubmittingRental] = useState(false);
+  const [rentalError, setRentalError] = useState<string | null>(null);
   const { addItem } = useCart();
 
   useEffect(() => {
@@ -86,6 +95,60 @@ export function ProductDetail() {
     }
   };
 
+  const handleRentNow = () => {
+    if (!user) {
+      alert('Please log in to rent items');
+      return;
+    }
+    setShowRentalForm(true);
+    setRentalError(null);
+  };
+
+  const handleSubmitRental = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !startDate || !endDate) return;
+
+    try {
+      setIsSubmittingRental(true);
+      setRentalError(null);
+
+      await rentalService.createRental({
+        listingId: id,
+        startDate,
+        endDate,
+      });
+
+      alert('Rental request submitted successfully! The owner will review your request.');
+      setShowRentalForm(false);
+      setStartDate('');
+      setEndDate('');
+    } catch (err: any) {
+      console.error('Error creating rental:', err);
+      setRentalError(err.response?.data?.error || 'Failed to submit rental request');
+    } finally {
+      setIsSubmittingRental(false);
+    }
+  };
+
+  const calculateTotalPrice = () => {
+    if (!startDate || !endDate || !listing) return 0;
+    try {
+      const days = calculateDays(startDate, endDate);
+      return listing.pricePerDay * days;
+    } catch {
+      return 0;
+    }
+  };
+
+  const getDays = () => {
+    if (!startDate || !endDate) return 0;
+    try {
+      return calculateDays(startDate, endDate);
+    } catch {
+      return 0;
+    }
+  };
+
   return (
     <div className="min-h-screen p-8">
       <Link
@@ -125,8 +188,12 @@ export function ProductDetail() {
           <p className="text-lg mb-6">{listing.description}</p>
 
           <div className="flex gap-4 mb-6">
-            <button className="flex-1 px-6 py-4 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all hover:shadow-lg hover:shadow-primary/30 font-medium">
-              Rent Now
+            <button 
+              onClick={handleRentNow}
+              disabled={!listing.isAvailable}
+              className="flex-1 px-6 py-4 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed text-white rounded-lg transition-all hover:shadow-lg hover:shadow-primary/30 font-medium"
+            >
+              {listing.isAvailable ? 'Rent Now' : 'Not Available'}
             </button>
             <button 
               onClick={handleAddToCart}
@@ -135,6 +202,86 @@ export function ProductDetail() {
               Add to Cart
             </button>
           </div>
+
+          {/* Rental Form Modal */}
+          {showRentalForm && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
+                <h3 className="text-xl font-bold mb-4">Rent {listing.title}</h3>
+                
+                {rentalError && (
+                  <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+                    {rentalError}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmitRental} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Start Date</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                      className="w-full px-3 py-2 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">End Date</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      min={startDate || new Date().toISOString().split('T')[0]}
+                      required
+                      className="w-full px-3 py-2 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                  </div>
+
+                  {startDate && endDate && (
+                    <div className="p-4 bg-muted rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <span>Duration:</span>
+                        <span className="font-medium">{getDays()} days</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span>Price per day:</span>
+                        <span className="font-medium">${listing.pricePerDay}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-lg font-bold border-t border-border pt-2">
+                        <span>Total:</span>
+                        <span className="text-primary">${calculateTotalPrice()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowRentalForm(false);
+                        setRentalError(null);
+                        setStartDate('');
+                        setEndDate('');
+                      }}
+                      className="flex-1 px-4 py-2 bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingRental || !startDate || !endDate}
+                      className="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                    >
+                      {isSubmittingRental ? 'Submitting...' : 'Confirm Rental'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4 p-6 bg-card border border-border rounded-xl">
             <div>

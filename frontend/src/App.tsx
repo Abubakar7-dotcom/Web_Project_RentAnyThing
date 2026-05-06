@@ -20,6 +20,7 @@ const CategoriesPage = lazy(() => import('./pages/CategoriesPage').then(m => ({ 
 const PopularPage = lazy(() => import('./pages/PopularPage').then(m => ({ default: m.PopularPage })));
 const ProductDetail = lazy(() => import('./pages/ProductDetail').then(m => ({ default: m.ProductDetail })));
 const RentOutPage = lazy(() => import('./pages/RentOutPage').then(m => ({ default: m.RentOutPage })));
+const RentalsPage = lazy(() => import('./pages/RentalsPage').then(m => ({ default: m.RentalsPage })));
 const AboutPage = lazy(() => import('./pages/AboutPage').then(m => ({ default: m.AboutPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ default: m.SettingsPage })));
 const ChatPage = lazy(() => import('./pages/ChatPage').then(m => ({ default: m.ChatPage })));
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="popular" element={<Suspense fallback={<LoadingSpinner />}><PopularPage /></Suspense>} />
         <Route path="product/:id" element={<Suspense fallback={<LoadingSpinner />}><ProductDetail /></Suspense>} />
         <Route path="rent-out" element={<Suspense fallback={<LoadingSpinner />}><RentOutPage /></Suspense>} />
+        <Route path="rentals" element={<Suspense fallback={<LoadingSpinner />}><RentalsPage /></Suspense>} />
         <Route path="about" element={<Suspense fallback={<LoadingSpinner />}><AboutPage /></Suspense>} />
         <Route path="settings" element={<Suspense fallback={<LoadingSpinner />}><SettingsPage /></Suspense>} />
         <Route path="chat" element={<Suspense fallback={<LoadingSpinner />}><ChatPage /></Suspense>} />

@@ -28,16 +28,13 @@ app.get('/health', (req: Request, res: Response) => {
 // Route mounts
 import authRoutes from './routes/auth';
 import listingRoutes from './routes/listings';
+import rentalRoutes from './routes/rentals';
+import paymentRoutes from './routes/payments';
+
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
-
-app.use('/api/rentals', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Rentals routes coming soon' });
-});
-
-app.use('/api/payments', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Payments routes coming soon' });
-});
+app.use('/api/rentals', rentalRoutes);
+app.use('/api/payments', paymentRoutes);
 
 app.use('/api/messages', (req: Request, res: Response) => {
   res.status(501).json({ error: 'Not Implemented', message: 'Messages routes coming soon' });

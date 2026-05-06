@@ -11,6 +11,7 @@ const config: Config = {
   ],
   moduleFileExtensions: ['ts', 'js', 'json'],
   verbose: true,
+  maxWorkers: 1, // Run tests sequentially to avoid database conflicts
   globals: {
     'ts-jest': {
       tsconfig: 'tsconfig.test.json',
