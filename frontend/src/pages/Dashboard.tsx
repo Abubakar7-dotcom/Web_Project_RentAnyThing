@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ListingCard } from '../components/ListingCard';
