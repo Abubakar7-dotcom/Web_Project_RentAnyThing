@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload } from 'lucide-react';
+import { Upload, X, Image } from 'lucide-react';
 import { createListing } from '../services/listingService';
 
 // Static category definitions
@@ -17,6 +17,7 @@ const categoryDefinitions = [
 
 export function RentOutPage() {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -25,30 +26,57 @@ export function RentOutPage() {
     location: '',
     description: '',
   });
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+  const [urlInput, setUrlInput] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Convert file to base64 data URL for preview (stored as URL)
+  const handleFiles = (files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        setMediaUrls((prev) => [...prev, dataUrl]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(e.dataTransfer.files);
+  };
+
+  const handleAddUrl = () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    if (!trimmed.startsWith('http')) {
+      setErrors((prev) => ({ ...prev, url: 'Please enter a valid URL starting with http' }));
+      return;
+    }
+    setMediaUrls((prev) => [...prev, trimmed]);
+    setUrlInput('');
+    setErrors((prev) => { const e = { ...prev }; delete e.url; return e; });
+  };
+
+  const removeImage = (index: number) => {
+    setMediaUrls((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Client-side validation
     const newErrors: Record<string, string> = {};
-
-    if (!formData.title.trim() || formData.title.length < 3) {
-      newErrors.title = 'Title must be at least 3 characters';
-    }
-    if (!formData.category) {
-      newErrors.category = 'Please select a category';
-    }
-    if (!formData.pricePerDay || parseFloat(formData.pricePerDay) <= 0) {
-      newErrors.pricePerDay = 'Price must be greater than 0';
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    }
-    if (!formData.location.trim()) {
-      newErrors.location = 'Location is required';
-    }
+    if (!formData.title.trim() || formData.title.length < 3) newErrors.title = 'Title must be at least 3 characters';
+    if (!formData.category) newErrors.category = 'Please select a category';
+    if (!formData.pricePerDay || parseFloat(formData.pricePerDay) <= 0) newErrors.pricePerDay = 'Price must be greater than 0';
+    if (!formData.description.trim()) newErrors.description = 'Description is required';
+    if (!formData.location.trim()) newErrors.location = 'Location is required';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -59,34 +87,28 @@ export function RentOutPage() {
       setIsSubmitting(true);
       setErrors({});
 
-      const listingData = {
+      // Filter out base64 data URLs — only send http URLs to the backend
+      const httpUrls = mediaUrls.filter((url) => url.startsWith('http'));
+
+      await createListing({
         title: formData.title.trim(),
         category: formData.category,
         pricePerDay: parseFloat(formData.pricePerDay),
         depositAmount: formData.depositAmount ? parseFloat(formData.depositAmount) : 0,
         location: formData.location.trim(),
         description: formData.description.trim(),
-        mediaUrls: [], // TODO: Handle image uploads in future
-      };
+        mediaUrls: httpUrls,
+      });
 
-      await createListing(listingData);
-      
-      // Success - navigate to dashboard
       navigate('/app');
     } catch (error: any) {
       console.error('Error creating listing:', error);
-      
-      // Handle validation errors from API
       if (error.response?.status === 422 && error.response?.data?.errors) {
         const apiErrors: Record<string, string> = {};
-        error.response.data.errors.forEach((err: any) => {
-          apiErrors[err.field] = err.message;
-        });
+        error.response.data.errors.forEach((err: any) => { apiErrors[err.field] = err.message; });
         setErrors(apiErrors);
       } else {
-        setErrors({ 
-          general: error.response?.data?.error || 'Failed to create listing. Please try again.' 
-        });
+        setErrors({ general: error.response?.data?.error || 'Failed to create listing. Please try again.' });
       }
     } finally {
       setIsSubmitting(false);
@@ -104,10 +126,90 @@ export function RentOutPage() {
               <p className="text-red-600">{errors.general}</p>
             </div>
           )}
-          <div className="bg-card border-2 border-dashed border-border rounded-xl p-12 text-center hover:border-accent transition-colors cursor-pointer">
-            <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-lg mb-2">Click to upload or drag and drop</p>
-            <p className="text-sm text-muted-foreground">PNG, JPG up to 10MB</p>
+
+          {/* Image Upload Area */}
+          <div>
+            <label className="block mb-2 font-medium">Photos</label>
+
+            {/* Drop zone */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                isDragging ? 'border-accent bg-accent/5' : 'border-border hover:border-accent'
+              }`}
+            >
+              <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+              <p className="font-medium mb-1">Click to upload or drag and drop</p>
+              <p className="text-sm text-muted-foreground">PNG, JPG up to 10MB each</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+            </div>
+
+            {/* URL input */}
+            <div className="flex gap-2 mt-3">
+              <input
+                type="text"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddUrl())}
+                placeholder="Or paste an image URL (https://...)"
+                className="flex-1 px-4 py-2 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-sm"
+              />
+              <button
+                type="button"
+                onClick={handleAddUrl}
+                className="px-4 py-2 bg-card border border-border hover:border-accent rounded-lg text-sm transition-colors"
+              >
+                Add URL
+              </button>
+            </div>
+            {errors.url && <p className="text-destructive text-sm mt-1">{errors.url}</p>}
+
+            {/* Image previews */}
+            {mediaUrls.length > 0 && (
+              <div className="grid grid-cols-3 gap-3 mt-4">
+                {mediaUrls.map((url, index) => (
+                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
+                    <img
+                      src={url}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=Invalid+URL';
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    {index === 0 && (
+                      <span className="absolute bottom-1 left-1 text-xs bg-primary text-white px-1.5 py-0.5 rounded">
+                        Main
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {/* Add more placeholder */}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-accent flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <Image className="w-6 h-6 text-muted-foreground" />
+                </div>
+              </div>
+            )}
           </div>
 
           <div>

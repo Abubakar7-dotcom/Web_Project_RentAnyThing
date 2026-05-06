@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import * as chatbotService from '../services/chatbotService';
 import * as complaintService from '../services/complaintService';
 
@@ -133,13 +134,27 @@ export function ChatWidget() {
                 className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-2 rounded-lg ${
+                  className={`max-w-[85%] px-4 py-2 rounded-lg ${
                     message.isBot
                       ? 'bg-muted text-foreground'
                       : 'bg-accent text-white'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  {message.isBot ? (
+                    <div className="text-sm prose prose-sm max-w-none
+                      prose-headings:text-foreground prose-headings:font-bold prose-headings:mb-1 prose-headings:mt-2
+                      prose-p:my-1 prose-p:leading-relaxed
+                      prose-strong:text-foreground prose-strong:font-semibold
+                      prose-ul:my-1 prose-ul:pl-4 prose-li:my-0.5
+                      prose-ol:my-1 prose-ol:pl-4
+                      prose-hr:my-2 prose-hr:border-border
+                      prose-em:italic
+                    ">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="text-sm">{message.content}</p>
+                  )}
                 </div>
               </div>
             ))}

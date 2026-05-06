@@ -50,4 +50,7 @@ router.post(
   authController.resetPassword
 );
 
+// GET /api/auth/socket-token - Get socket token for Socket.io auth
+router.get('/socket-token', authenticate, authController.getSocketToken);
+
 export default router;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Send, MessageSquare, Wifi, WifiOff } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { useAuth } from '../context/AuthContext';
 import { useChat } from '../hooks/useChat';
 import * as messageService from '../services/messageService';
@@ -191,7 +192,13 @@ export function ChatPage() {
                         {!isSent && (
                           <p className="text-xs font-medium mb-1 opacity-70">{message.sender.name}</p>
                         )}
-                        <p>{message.content}</p>
+                        <div className={`text-sm prose prose-sm max-w-none ${
+                          isSent
+                            ? 'prose-invert prose-p:text-white prose-strong:text-white prose-li:text-white'
+                            : 'prose-headings:text-foreground prose-strong:text-foreground'
+                        } prose-p:my-0.5 prose-ul:my-1 prose-ol:my-1 prose-li:my-0`}>
+                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                        </div>
                         <p className={`text-xs mt-1 ${isSent ? 'text-white/70' : 'text-muted-foreground'}`}>
                           {new Date(message.createdAt).toLocaleTimeString([], {
                             hour: '2-digit',

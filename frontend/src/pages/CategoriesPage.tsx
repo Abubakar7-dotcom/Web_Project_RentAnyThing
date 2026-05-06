@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getListings } from '../services/listingService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
@@ -21,6 +22,7 @@ const categoryDefinitions = [
 ];
 
 export function CategoriesPage() {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -89,6 +91,7 @@ export function CategoriesPage() {
         {categories.map((category) => (
           <button
             key={category.name}
+            onClick={() => navigate(`/app?category=${encodeURIComponent(category.name)}`)}
             className="group p-8 bg-card border border-border rounded-xl hover:border-accent transition-all duration-300 hover:shadow-xl hover:-translate-y-1 text-center"
           >
             <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import * as authService from '../services/authService';
-import { signToken } from '../utils/tokenUtils';
+import { signToken, verifyToken } from '../utils/tokenUtils';
 
 /**
  * Register a new user
@@ -8,22 +8,14 @@ import { signToken } from '../utils/tokenUtils';
 export async function register(req: Request, res: Response): Promise<void> {
   try {
     const { name, email, password } = req.body;
-
-    // Call auth service to register user
     const user = await authService.register(name, email, password);
-
-    // Sign JWT token (default 30 minutes)
     const token = signToken(user.id, user.role, false);
-
-    // Set HTTP-only cookie
     res.cookie('jwt', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-      maxAge: 30 * 60 * 1000, // 30 minutes in milliseconds
+      maxAge: 30 * 60 * 1000,
     });
-
-    // Return user without password
     res.status(201).json({ user });
   } catch (error: any) {
     const statusCode = error.statusCode || 500;
@@ -37,27 +29,17 @@ export async function register(req: Request, res: Response): Promise<void> {
 export async function login(req: Request, res: Response): Promise<void> {
   try {
     const { email, password, rememberMe } = req.body;
-
-    // Call auth service to login user
     const user = await authService.login(email, password);
-
-    // Sign JWT token with rememberMe flag
     const token = signToken(user.id, user.role, rememberMe || false);
-
-    // Calculate cookie max age based on rememberMe
     const maxAge = rememberMe
-      ? 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
-      : 30 * 60 * 1000; // 30 minutes in milliseconds
-
-    // Set HTTP-only cookie
+      ? 30 * 24 * 60 * 60 * 1000
+      : 30 * 60 * 1000;
     res.cookie('jwt', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge,
     });
-
-    // Return user without password
     res.status(200).json({ user });
   } catch (error: any) {
     const statusCode = error.statusCode || 500;
@@ -70,16 +52,12 @@ export async function login(req: Request, res: Response): Promise<void> {
  */
 export async function logout(req: Request, res: Response): Promise<void> {
   try {
-    // Call auth service (no-op)
     authService.logout();
-
-    // Clear JWT cookie
     res.clearCookie('jwt', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     });
-
     res.status(200).json({ message: 'Logged out successfully' });
   } catch (error: any) {
     res.status(500).json({ error: 'Internal server error' });
@@ -92,11 +70,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
 export async function forgotPassword(req: Request, res: Response): Promise<void> {
   try {
     const { email } = req.body;
-
-    // Call auth service
     await authService.forgotPassword(email);
-
-    // Always return success to prevent email enumeration
     res.status(200).json({ message: 'If the email exists, a reset link has been sent' });
   } catch (error: any) {
     res.status(500).json({ error: 'Internal server error' });
@@ -109,13 +83,29 @@ export async function forgotPassword(req: Request, res: Response): Promise<void>
 export async function resetPassword(req: Request, res: Response): Promise<void> {
   try {
     const { token, password } = req.body;
-
-    // Call auth service
     await authService.resetPassword(token, password);
-
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error: any) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({ error: error.message || 'Internal server error' });
+  }
+}
+
+/**
+ * Get a socket token for Socket.io authentication.
+ * Reads the JWT from the HTTP-only cookie (server-side) and returns it as JSON
+ * so the frontend can pass it to Socket.io handshake auth.
+ */
+export async function getSocketToken(req: Request, res: Response): Promise<void> {
+  try {
+    const token = req.cookies.jwt;
+    if (!token) {
+      res.status(401).json({ error: 'Authentication required' });
+      return;
+    }
+    verifyToken(token); // ensure it's still valid
+    res.status(200).json({ token });
+  } catch (error) {
+    res.status(401).json({ error: 'Authentication required' });
   }
 }

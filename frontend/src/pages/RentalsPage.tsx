@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, DollarSign, User, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, DollarSign, User, CheckCircle, XCircle, AlertCircle, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { rentalService, type Rental } from '../services/rentalService';
 import { paymentService } from '../services/paymentService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -14,6 +15,7 @@ const statusConfig = {
 
 export function RentalsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [rentals, setRentals] = useState<Rental[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -198,6 +200,23 @@ export function RentalsPage() {
 
                       {/* Actions */}
                       <div className="flex flex-wrap gap-2">
+                        {/* Chat button — borrower chats with owner, owner chats with borrower */}
+                        {rental.status !== 'CANCELLED' && (
+                          <button
+                            onClick={() => {
+                              const otherUserId = isOwner(rental)
+                                ? rental.borrowerId
+                                : rental.listing.owner?.id;
+                              if (otherUserId) {
+                                navigate(`/app/chat?listingId=${rental.listingId}&userId=${otherUserId}`);
+                              }
+                            }}
+                            className="px-4 py-2 bg-card border border-border hover:border-primary hover:text-primary rounded-lg transition-colors text-sm flex items-center gap-2"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            {isOwner(rental) ? `Chat with ${rental.borrower.name}` : `Chat with Owner`}
+                          </button>
+                        )}
                         {/* Owner Actions */}
                         {isOwner(rental) && rental.status === 'PENDING' && (
                           <button

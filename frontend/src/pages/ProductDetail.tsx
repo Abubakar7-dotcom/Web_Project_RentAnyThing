@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Flag, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Send, Flag, MessageCircle, Star } from 'lucide-react';
 import { StarRating } from '../components/StarRating';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { getListing, type Listing } from '../services/listingService';
-import { rentalService } from '../services/rentalService';
+import { rentalService, type Rental } from '../services/rentalService';
 import * as reviewService from '../services/reviewService';
 import { calculateDays } from '../utils/calculateDays';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -31,6 +31,14 @@ export function ProductDetail() {
   const [qas, setQAs] = useState<reviewService.QA[]>([]);
   const [isSubmittingQuestion, setIsSubmittingQuestion] = useState(false);
 
+  // Review form state
+  const [eligibleRental, setEligibleRental] = useState<Rental | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+
   useEffect(() => {
     async function fetchListing() {
       if (!id) return;
@@ -50,6 +58,30 @@ export function ProductDetail() {
         setReviews(reviewsData.reviews);
         setAverageRating(reviewsData.averageRating);
         setQAs(qasData);
+
+        // Check if current user has a completed rental for this listing (eligible to review)
+        if (user) {
+          try {
+            const userRentals = await rentalService.getRentals();
+            const completed = userRentals.find(
+              (r) =>
+                r.listingId === id &&
+                r.borrowerId === user.id &&
+                r.status === 'COMPLETED'
+            );
+            if (completed) {
+              // Check they haven't already reviewed this rental
+              const alreadyReviewed = reviewsData.reviews.some(
+                (rev) => rev.rentalId === completed.id
+              );
+              if (!alreadyReviewed) {
+                setEligibleRental(completed);
+              }
+            }
+          } catch {
+            // Non-critical — ignore errors here
+          }
+        }
       } catch (err: any) {
         console.error('Error fetching listing:', err);
         if (err.response?.status === 404) {
@@ -97,8 +129,34 @@ export function ProductDetail() {
     addItem(listing);
   };
 
-  const handleSubmitQuestion = async (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!id || !eligibleRental || reviewRating === 0) return;
+
+    try {
+      setIsSubmittingReview(true);
+      const newReview = await reviewService.submitReview(id, {
+        rating: reviewRating,
+        comment: reviewComment.trim(),
+        rentalId: eligibleRental.id,
+      });
+      setReviews((prev) => [newReview, ...prev]);
+      setAverageRating((prev) => {
+        const total = prev * reviews.length + reviewRating;
+        return Math.round((total / (reviews.length + 1)) * 10) / 10;
+      });
+      setEligibleRental(null); // Hide form after submission
+      setShowReviewForm(false);
+      setReviewSuccess(true);
+      setTimeout(() => setReviewSuccess(false), 4000);
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to submit review');
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleSubmitQuestion = async (e: React.FormEvent) => {    e.preventDefault();
     if (!question.trim() || !id) return;
 
     try {
@@ -393,23 +451,101 @@ export function ProductDetail() {
 
         <div className="bg-card border border-border rounded-xl p-6">
           <h2 className="text-2xl font-bold mb-6">Reviews</h2>
-          <div className="space-y-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="pb-6 border-b border-border last:border-0 last:pb-0">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h4 className="font-semibold">{review.reviewer.name}</h4>
-                    <div className="mt-1">
-                      <StarRating rating={review.rating} size="sm" />
-                    </div>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(review.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-muted-foreground">{review.comment}</p>
+
+          {/* Success toast */}
+          {reviewSuccess && (
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-600 text-sm">
+              ✓ Your review has been submitted successfully!
+            </div>
+          )}
+
+          {/* Review form — only for eligible users */}
+          {eligibleRental && !showReviewForm && (
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="w-full mb-6 px-4 py-3 border-2 border-dashed border-accent text-accent hover:bg-accent/5 rounded-xl transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <Star className="w-5 h-5" />
+              You rented this — leave a review!
+            </button>
+          )}
+
+          {eligibleRental && showReviewForm && (
+            <form onSubmit={handleSubmitReview} className="mb-6 p-4 bg-muted rounded-xl border border-border">
+              <h3 className="font-semibold mb-3">Write Your Review</h3>
+
+              {/* Star picker */}
+              <div className="flex items-center gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setReviewRating(star)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`w-8 h-8 ${
+                        star <= reviewRating
+                          ? 'fill-accent text-accent'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="ml-2 text-sm text-muted-foreground">
+                  {reviewRating === 0 ? 'Select a rating' : `${reviewRating} / 5`}
+                </span>
               </div>
-            ))}
+
+              <textarea
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Share your experience with this item..."
+                rows={3}
+                className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none text-sm mb-3"
+              />
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewForm(false)}
+                  className="flex-1 px-4 py-2 bg-card border border-border rounded-lg text-sm hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReview || reviewRating === 0 || !reviewComment.trim()}
+                  className="flex-1 px-4 py-2 bg-accent hover:bg-accent/90 disabled:bg-muted disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
+                >
+                  {isSubmittingReview ? 'Submitting...' : 'Submit Review'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Reviews list */}
+          <div className="space-y-6">
+            {reviews.length === 0 ? (
+              <p className="text-center text-muted-foreground py-6">No reviews yet. Be the first to review!</p>
+            ) : (
+              reviews.map((review) => (
+                <div key={review.id} className="pb-6 border-b border-border last:border-0 last:pb-0">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h4 className="font-semibold">{review.reviewer.name}</h4>
+                      <div className="mt-1">
+                        <StarRating rating={review.rating} size="sm" />
+                      </div>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(review.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-muted-foreground">{review.comment}</p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
