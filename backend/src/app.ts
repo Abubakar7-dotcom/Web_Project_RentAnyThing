@@ -27,11 +27,9 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Route mounts
 import authRoutes from './routes/auth';
+import listingRoutes from './routes/listings';
 app.use('/api/auth', authRoutes);
-
-app.use('/api/listings', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Listings routes coming soon' });
-});
+app.use('/api/listings', listingRoutes);
 
 app.use('/api/rentals', (req: Request, res: Response) => {
   res.status(501).json({ error: 'Not Implemented', message: 'Rentals routes coming soon' });

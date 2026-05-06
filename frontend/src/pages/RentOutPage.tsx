@@ -1,8 +1,22 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
-import { categories } from '../utils/mockData';
+import { createListing } from '../services/listingService';
+
+// Static category definitions
+const categoryDefinitions = [
+  { name: 'Electronics', icon: '📱' },
+  { name: 'Tools', icon: '🔧' },
+  { name: 'Sports', icon: '⚽' },
+  { name: 'Cameras', icon: '📷' },
+  { name: 'Gaming', icon: '🎮' },
+  { name: 'Music', icon: '🎸' },
+  { name: 'Outdoor', icon: '⛺' },
+  { name: 'Party', icon: '🎉' },
+];
 
 export function RentOutPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     category: '',
@@ -12,9 +26,12 @@ export function RentOutPage() {
     description: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim() || formData.title.length < 3) {
@@ -29,23 +46,51 @@ export function RentOutPage() {
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
     }
+    if (!formData.location.trim()) {
+      newErrors.location = 'Location is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Mock submission
-    alert('Listing created successfully!');
-    setFormData({
-      title: '',
-      category: '',
-      pricePerDay: '',
-      depositAmount: '',
-      location: '',
-      description: '',
-    });
-    setErrors({});
+    try {
+      setIsSubmitting(true);
+      setErrors({});
+
+      const listingData = {
+        title: formData.title.trim(),
+        category: formData.category,
+        pricePerDay: parseFloat(formData.pricePerDay),
+        depositAmount: formData.depositAmount ? parseFloat(formData.depositAmount) : 0,
+        location: formData.location.trim(),
+        description: formData.description.trim(),
+        mediaUrls: [], // TODO: Handle image uploads in future
+      };
+
+      await createListing(listingData);
+      
+      // Success - navigate to dashboard
+      navigate('/app');
+    } catch (error: any) {
+      console.error('Error creating listing:', error);
+      
+      // Handle validation errors from API
+      if (error.response?.status === 422 && error.response?.data?.errors) {
+        const apiErrors: Record<string, string> = {};
+        error.response.data.errors.forEach((err: any) => {
+          apiErrors[err.field] = err.message;
+        });
+        setErrors(apiErrors);
+      } else {
+        setErrors({ 
+          general: error.response?.data?.error || 'Failed to create listing. Please try again.' 
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -54,6 +99,11 @@ export function RentOutPage() {
         <h1 className="text-4xl font-bold mb-8">List Your Item</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {errors.general && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600">{errors.general}</p>
+            </div>
+          )}
           <div className="bg-card border-2 border-dashed border-border rounded-xl p-12 text-center hover:border-accent transition-colors cursor-pointer">
             <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-lg mb-2">Click to upload or drag and drop</p>
@@ -80,8 +130,8 @@ export function RentOutPage() {
               className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             >
               <option value="">Select a category</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
+              {categoryDefinitions.map((cat) => (
+                <option key={cat.name} value={cat.name}>
                   {cat.icon} {cat.name}
                 </option>
               ))}
@@ -129,6 +179,7 @@ export function RentOutPage() {
               placeholder="e.g., San Francisco, CA"
               className="w-full px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             />
+            {errors.location && <p className="text-destructive text-sm mt-1">{errors.location}</p>}
           </div>
 
           <div>
@@ -152,9 +203,10 @@ export function RentOutPage() {
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all hover:shadow-lg hover:shadow-primary/30 font-medium"
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-white rounded-lg transition-all hover:shadow-lg hover:shadow-primary/30 font-medium"
             >
-              List Item
+              {isSubmitting ? 'Creating...' : 'List Item'}
             </button>
           </div>
         </form>

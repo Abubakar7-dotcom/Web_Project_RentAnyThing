@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Listing } from '../utils/mockData';
+import type { Listing } from '../services/listingService';
 
 export interface CartItem {
   listing: Listing;

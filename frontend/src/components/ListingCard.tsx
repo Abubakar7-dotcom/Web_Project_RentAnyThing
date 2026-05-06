@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { Listing } from '../utils/mockData';
+import type { Listing } from '../services/listingService';
 import { StarRating } from './StarRating';
 
 interface ListingCardProps {
@@ -10,6 +10,18 @@ interface ListingCardProps {
 
 export function ListingCard({ listing, rank, variant = 'square' }: ListingCardProps) {
   const aspectClass = variant === 'video' ? 'aspect-video' : 'aspect-square';
+  
+  // Calculate rating and review count from reviews array
+  const reviews = listing.reviews || [];
+  const averageRating = reviews.length > 0 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 0;
+  const reviewCount = reviews.length;
+  
+  // Get the first image from media array
+  const imageUrl = listing.media && listing.media.length > 0 
+    ? listing.media[0].url 
+    : 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500&q=80'; // fallback image
 
   return (
     <Link
@@ -23,8 +35,9 @@ export function ListingCard({ listing, rank, variant = 'square' }: ListingCardPr
       )}
       <div className={`${aspectClass} overflow-hidden`}>
         <img
-          src={listing.image}
+          src={imageUrl}
           alt={listing.title}
+          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
       </div>
@@ -39,7 +52,7 @@ export function ListingCard({ listing, rank, variant = 'square' }: ListingCardPr
           {listing.description}
         </p>
         <div className="flex items-center justify-between">
-          <StarRating rating={listing.rating} size="sm" showCount count={listing.reviewCount} />
+          <StarRating rating={averageRating} size="sm" showCount count={reviewCount} />
           <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
             {listing.category}
           </span>

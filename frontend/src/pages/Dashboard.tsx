@@ -1,25 +1,42 @@
-import { useState, useMemo } from 'react';
-import { listings } from '../utils/mockData';
+import { useMemo } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { ListingCard } from '../components/ListingCard';
+import { useListings } from '../hooks/useListings';
+import { LoadingSpinner } from '../components/LoadingSpinner';
 
 export function Dashboard() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const { listings, isLoading, error, search, setSearch } = useListings();
   
   const featuredListings = useMemo(() => 
     listings.filter((p) => p.isFeatured),
-    []
+    [listings]
   );
 
-  const filteredListings = useMemo(() => {
-    if (!searchQuery.trim()) return listings;
-    const query = searchQuery.toLowerCase();
-    return listings.filter(listing =>
-      listing.title.toLowerCase().includes(query) ||
-      listing.description.toLowerCase().includes(query) ||
-      listing.category.toLowerCase().includes(query)
+  const allListings = useMemo(() => listings, [listings]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
     );
-  }, [searchQuery]);
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-8">
@@ -30,8 +47,8 @@ export function Dashboard() {
             <input
               type="text"
               placeholder="Search for items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-12 pr-4 py-3 bg-card border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
             />
           </div>
@@ -55,13 +72,13 @@ export function Dashboard() {
 
       <div>
         <h2 className="text-3xl font-bold mb-6">All Products</h2>
-        {filteredListings.length === 0 ? (
+        {allListings.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <p>No items found matching "{searchQuery}"</p>
+            <p>No items found matching "{search}"</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredListings.map((listing) => (
+            {allListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>

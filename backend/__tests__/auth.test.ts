@@ -12,6 +12,18 @@ const prisma = new PrismaClient({
 
 // Helper to clean up test data
 async function cleanupTestData() {
+  // Delete listings first to avoid foreign key constraints
+  await prisma.listing.deleteMany({
+    where: {
+      owner: {
+        email: {
+          contains: 'test',
+        },
+      },
+    },
+  });
+  
+  // Then delete users
   await prisma.user.deleteMany({
     where: {
       email: {
@@ -22,8 +34,8 @@ async function cleanupTestData() {
 }
 
 describe('Authentication API', () => {
-  beforeAll(async () => {
-    // Clean up any existing test data
+  beforeEach(async () => {
+    // Clean up any existing test data before each test
     await cleanupTestData();
   });
 
@@ -150,7 +162,7 @@ describe('Authentication API', () => {
   });
 
   describe('POST /api/auth/login', () => {
-    beforeAll(async () => {
+    beforeEach(async () => {
       // Create a test user for login tests
       await request(app)
         .post('/api/auth/register')
@@ -257,20 +269,30 @@ describe('Authentication API', () => {
 
   describe('POST /api/auth/logout', () => {
     it('should clear JWT cookie and return 200', async () => {
-      // First login to get a cookie
+      // First register a user for this test
+      await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Logout Test User',
+          email: 'logouttest@example.com',
+          password: 'Password123',
+        });
+
+      // Then login to get a cookie
       const loginResponse = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'logintest@example.com',
+          email: 'logouttest@example.com',
           password: 'Password123',
         });
 
       const cookies = loginResponse.headers['set-cookie'];
+      expect(cookies).toBeDefined();
 
       // Now logout
       const response = await request(app)
         .post('/api/auth/logout')
-        .set('Cookie', cookies);
+        .set('Cookie', cookies[0]);
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('Logged out successfully');
