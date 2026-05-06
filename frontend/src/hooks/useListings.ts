@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getListings, type Listing, type GetListingsParams } from '../services/listingService';
 
 interface UseListingsReturn {
@@ -23,6 +23,9 @@ export function useListings(initialParams: GetListingsParams = {}): UseListingsR
   const [search, setSearchState] = useState(initialParams.search || '');
   const [pagination, setPagination] = useState<UseListingsReturn['pagination']>(null);
   const [debouncedSearch, setDebouncedSearch] = useState(search);
+  
+  // Use ref to store initialParams to avoid dependency issues
+  const initialParamsRef = useRef(initialParams);
 
   // Debounce search input (300ms)
   useEffect(() => {
@@ -39,7 +42,7 @@ export function useListings(initialParams: GetListingsParams = {}): UseListingsR
       setError(null);
       
       const finalParams = {
-        ...initialParams,
+        ...initialParamsRef.current,
         ...params,
         search: debouncedSearch || params.search,
       };
@@ -55,7 +58,7 @@ export function useListings(initialParams: GetListingsParams = {}): UseListingsR
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, initialParams]);
+  }, [debouncedSearch]);
 
   // Fetch listings when debounced search changes
   useEffect(() => {

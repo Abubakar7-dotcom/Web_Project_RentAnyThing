@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,6 +13,9 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
 }));
+
+// Request logging middleware
+app.use(morgan('dev'));
 
 // Body parser middleware
 app.use(express.json());
@@ -30,18 +34,18 @@ import authRoutes from './routes/auth';
 import listingRoutes from './routes/listings';
 import rentalRoutes from './routes/rentals';
 import paymentRoutes from './routes/payments';
+import reviewRoutes from './routes/reviews';
+import complaintRoutes from './routes/complaints';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/listings', reviewRoutes); // Reviews and Q&A are under /api/listings/:id/reviews and /api/listings/:id/qa
+app.use('/api/complaints', complaintRoutes);
 
 app.use('/api/messages', (req: Request, res: Response) => {
   res.status(501).json({ error: 'Not Implemented', message: 'Messages routes coming soon' });
-});
-
-app.use('/api/complaints', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Complaints routes coming soon' });
 });
 
 app.use('/api/admin', (req: Request, res: Response) => {

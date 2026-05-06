@@ -30,7 +30,7 @@ interface AuthResponse {
  * Register a new user
  */
 export async function register(data: RegisterData): Promise<AuthUser> {
-  const response = await api.post<AuthResponse>('/api/auth/register', data);
+  const response = await api.post<AuthResponse>('/auth/register', data);
   return response.data.user;
 }
 
@@ -38,7 +38,7 @@ export async function register(data: RegisterData): Promise<AuthUser> {
  * Login a user
  */
 export async function login(data: LoginData): Promise<AuthUser> {
-  const response = await api.post<AuthResponse>('/api/auth/login', data);
+  const response = await api.post<AuthResponse>('/auth/login', data);
   return response.data.user;
 }
 
@@ -46,19 +46,19 @@ export async function login(data: LoginData): Promise<AuthUser> {
  * Logout the current user
  */
 export async function logout(): Promise<void> {
-  await api.post('/api/auth/logout');
+  await api.post('/auth/logout');
 }
 
 /**
  * Request a password reset email
  */
 export async function forgotPassword(data: ForgotPasswordData): Promise<void> {
-  await api.post('/api/auth/forgot-password', data);
+  await api.post('/auth/forgot-password', data);
 }
 
 /**
  * Reset password using token
  */
 export async function resetPassword(data: ResetPasswordData): Promise<void> {
-  await api.post('/api/auth/reset-password', data);
+  await api.post('/auth/reset-password', data);
 }

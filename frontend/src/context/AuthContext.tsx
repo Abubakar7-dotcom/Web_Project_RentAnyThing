@@ -27,9 +27,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    // For now, we'll set isLoading to false immediately
-    // In a real app, you might want to check session validity with an API call
-    setIsLoading(false);
+    const checkSession = () => {
+      // Check localStorage for user data
+      const storedUser = localStorage.getItem('user');
+      const storedRememberMe = localStorage.getItem('rememberMe');
+      
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+          setHasRememberMe(storedRememberMe === 'true');
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          localStorage.removeItem('user');
+          localStorage.removeItem('rememberMe');
+        }
+      }
+      
+      setIsLoading(false);
+    };
+
+    checkSession();
   }, []);
 
   const login = async (email: string, password: string, rememberMe?: boolean) => {
@@ -38,6 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await authService.login({ email, password, rememberMe });
       setUser(userData);
       setHasRememberMe(rememberMe || false);
+      
+      // Store user in localStorage for session persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('rememberMe', String(rememberMe || false));
     } catch (error: any) {
       throw error;
     } finally {
@@ -51,10 +72,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authService.logout();
       setUser(null);
       setHasRememberMe(false);
+      
+      // Clear localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
     } catch (error: any) {
       // Even if logout fails, clear local state
       setUser(null);
       setHasRememberMe(false);
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await authService.register({ name, email, password });
       setUser(userData);
       setHasRememberMe(false); // Registration doesn't have remember me
+      
+      // Store user in localStorage for session persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('rememberMe', 'false');
     } catch (error: any) {
       throw error;
     } finally {

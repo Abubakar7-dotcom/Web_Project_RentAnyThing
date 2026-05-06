@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Send, Calendar } from 'lucide-react';
+import { ArrowLeft, Send, Calendar, Flag } from 'lucide-react';
 import { StarRating } from '../components/StarRating';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { getListing, type Listing } from '../services/listingService';
 import { rentalService } from '../services/rentalService';
+import * as reviewService from '../services/reviewService';
 import { calculateDays } from '../utils/calculateDays';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
@@ -23,6 +24,12 @@ export function ProductDetail() {
   const [rentalError, setRentalError] = useState<string | null>(null);
   const { addItem } = useCart();
 
+  // Reviews and Q&A state
+  const [reviews, setReviews] = useState<reviewService.Review[]>([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [qas, setQAs] = useState<reviewService.QA[]>([]);
+  const [isSubmittingQuestion, setIsSubmittingQuestion] = useState(false);
+
   useEffect(() => {
     async function fetchListing() {
       if (!id) return;
@@ -32,6 +39,16 @@ export function ProductDetail() {
         setError(null);
         const fetchedListing = await getListing(id);
         setListing(fetchedListing);
+
+        // Fetch reviews and Q&A
+        const [reviewsData, qasData] = await Promise.all([
+          reviewService.getReviews(id),
+          reviewService.getQAs(id),
+        ]);
+
+        setReviews(reviewsData.reviews);
+        setAverageRating(reviewsData.averageRating);
+        setQAs(qasData);
       } catch (err: any) {
         console.error('Error fetching listing:', err);
         if (err.response?.status === 404) {
@@ -86,12 +103,20 @@ export function ProductDetail() {
     addItem(listing);
   };
 
-  const handleSubmitQuestion = (e: React.FormEvent) => {
+  const handleSubmitQuestion = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (question.trim()) {
-      // Mock submission
-      alert('Question submitted!');
+    if (!question.trim() || !id) return;
+
+    try {
+      setIsSubmittingQuestion(true);
+      const newQA = await reviewService.submitQuestion(id, question.trim());
+      setQAs([...qas, newQA]);
       setQuestion('');
+    } catch (err: any) {
+      console.error('Error submitting question:', err);
+      alert(err.response?.data?.error || 'Failed to submit question');
+    } finally {
+      setIsSubmittingQuestion(false);
     }
   };
 
@@ -151,13 +176,22 @@ export function ProductDetail() {
 
   return (
     <div className="min-h-screen p-8">
-      <Link
-        to="/app"
-        className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to products
-      </Link>
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          to="/app"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to products
+        </Link>
+        <Link
+          to={`/app/complaints?listingId=${id}`}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-destructive border border-border hover:border-destructive rounded-lg transition-colors"
+        >
+          <Flag className="w-4 h-4" />
+          Report Listing
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         <div className="aspect-square rounded-2xl overflow-hidden border border-border">
@@ -341,11 +375,13 @@ export function ProductDetail() {
               placeholder="Ask a question..."
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              className="flex-1 px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all"
+              disabled={isSubmittingQuestion}
+              className="flex-1 px-4 py-3 bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent transition-all disabled:opacity-50"
             />
             <button 
               type="submit"
-              className="px-4 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors"
+              disabled={isSubmittingQuestion || !question.trim()}
+              className="px-4 py-3 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
               <Send className="w-5 h-5" />
             </button>

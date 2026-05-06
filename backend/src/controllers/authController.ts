@@ -19,7 +19,7 @@ export async function register(req: Request, res: Response): Promise<void> {
     res.cookie('jwt', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge: 30 * 60 * 1000, // 30 minutes in milliseconds
     });
 
@@ -53,7 +53,7 @@ export async function login(req: Request, res: Response): Promise<void> {
     res.cookie('jwt', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
       maxAge,
     });
 
@@ -77,7 +77,7 @@ export async function logout(req: Request, res: Response): Promise<void> {
     res.clearCookie('jwt', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
     });
 
     res.status(200).json({ message: 'Logged out successfully' });
