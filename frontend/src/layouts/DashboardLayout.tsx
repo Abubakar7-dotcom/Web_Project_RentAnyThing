@@ -2,12 +2,19 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Home, Grid, TrendingUp, PlusCircle, Info, Settings, Menu, ShoppingCart, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useInactivityTimer } from '../hooks/useInactivityTimer';
 
 export function DashboardLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
   const { items, removeItem, total, itemCount } = useCart();
+  const { user } = useAuth();
+  
+  // Enable inactivity timer (30 min timeout)
+  // Note: hasRememberMe is set to false for now - in production, you'd check the cookie max-age
+  useInactivityTimer(!!user, false);
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/app' },

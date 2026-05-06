@@ -11,6 +11,11 @@ const config: Config = {
   ],
   moduleFileExtensions: ['ts', 'js', 'json'],
   verbose: true,
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
+  },
 };
 
 export default config;

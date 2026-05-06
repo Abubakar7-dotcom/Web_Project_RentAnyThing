@@ -13,7 +13,7 @@ const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes in milliseconds
  */
 export function useInactivityTimer(isAuthenticated: boolean, hasRememberMe: boolean = false) {
   const navigate = useNavigate();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Don't start timer if not authenticated or if remember me is enabled
@@ -28,7 +28,7 @@ export function useInactivityTimer(isAuthenticated: boolean, hasRememberMe: bool
       }
 
       // Set new timeout
-      timeoutRef.current = setTimeout(async () => {
+      timeoutRef.current = window.setTimeout(async () => {
         try {
           await authService.logout();
         } catch (error) {
@@ -53,7 +53,7 @@ export function useInactivityTimer(isAuthenticated: boolean, hasRememberMe: bool
     // Cleanup
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        window.clearTimeout(timeoutRef.current);
       }
       events.forEach((event) => {
         window.removeEventListener(event, resetTimer);

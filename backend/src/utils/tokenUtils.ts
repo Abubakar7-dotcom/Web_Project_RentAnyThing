@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -27,7 +27,7 @@ export function signToken(userId: string, role: string, rememberMe: boolean = fa
 
   const expiresIn = rememberMe ? JWT_REMEMBER_EXPIRES_IN : JWT_EXPIRES_IN;
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn } as SignOptions);
 }
 
 /**
