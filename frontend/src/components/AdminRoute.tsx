@@ -17,7 +17,10 @@ export function AdminRoute({ children }: AdminRouteProps) {
     return <Navigate to="/auth" replace />;
   }
 
-  // For now, allow all authenticated users (stub implementation)
-  // Will be updated in Task 8 to check user.role === 'ADMIN'
+  // Only allow ADMIN users
+  if (user.role !== 'ADMIN') {
+    return <Navigate to="/app" replace />;
+  }
+
   return <>{children}</>;
 }

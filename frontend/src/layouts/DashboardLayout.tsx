@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Grid, TrendingUp, PlusCircle, Calendar, Info, Settings, Menu, ShoppingCart, X } from 'lucide-react';
+import { Home, Grid, TrendingUp, PlusCircle, Calendar, Info, Settings, Menu, ShoppingCart, X, Shield } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
@@ -79,6 +79,30 @@ export function DashboardLayout() {
               );
             })}
           </nav>
+
+          {/* Admin link — only visible to admins */}
+          {user?.role === 'ADMIN' && (
+            <div className="px-3 pb-4">
+              <div className="border-t border-sidebar-border pt-4">
+                <Link
+                  to="/admin"
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                    location.pathname.startsWith('/admin')
+                      ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-accent'
+                  }`}
+                >
+                  <Shield className="w-5 h-5 flex-shrink-0" />
+                  <span
+                    className="whitespace-nowrap transition-opacity duration-200 font-medium"
+                    style={{ opacity: sidebarExpanded ? 1 : 0 }}
+                  >
+                    Admin Panel
+                  </span>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

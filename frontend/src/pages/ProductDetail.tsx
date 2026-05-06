@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Send, Calendar, Flag } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Send, Flag, MessageCircle } from 'lucide-react';
 import { StarRating } from '../components/StarRating';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [listing, setListing] = useState<Listing | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,13 +89,6 @@ export function ProductDetail() {
     );
   }
 
-  // Calculate average rating from reviews
-  const reviews = listing.reviews || [];
-  const averageRating = reviews.length > 0 
-    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
-    : 0;
-  
-  const qas = listing.qas || [];
   const imageUrl = listing.media && listing.media.length > 0 
     ? listing.media[0].url 
     : 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500&q=80';
@@ -235,6 +229,15 @@ export function ProductDetail() {
             >
               Add to Cart
             </button>
+            {user && user.id !== listing.ownerId && (
+              <button
+                onClick={() => navigate(`/app/chat?listingId=${id}&userId=${listing.owner.id}`)}
+                className="px-6 py-4 bg-card border border-border hover:border-primary rounded-lg transition-all font-medium flex items-center gap-2"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Message
+              </button>
+            )}
           </div>
 
           {/* Rental Form Modal */}

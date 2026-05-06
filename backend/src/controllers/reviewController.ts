@@ -6,7 +6,7 @@ import * as reviewService from '../services/reviewService';
  */
 export async function getReviews(req: Request, res: Response): Promise<void> {
   try {
-    const { listingId } = req.params;
+    const listingId = req.params.listingId as string;
 
     const result = await reviewService.getReviews(listingId);
 
@@ -22,7 +22,7 @@ export async function getReviews(req: Request, res: Response): Promise<void> {
  */
 export async function submitReview(req: Request, res: Response): Promise<void> {
   try {
-    const { listingId } = req.params;
+    const listingId = req.params.listingId as string;
     const { rating, comment, rentalId } = req.body;
     const reviewerId = req.user!.id;
 
@@ -46,7 +46,7 @@ export async function submitReview(req: Request, res: Response): Promise<void> {
  */
 export async function getQAs(req: Request, res: Response): Promise<void> {
   try {
-    const { listingId } = req.params;
+    const listingId = req.params.listingId as string;
 
     const qas = await reviewService.getQAs(listingId);
 
@@ -62,7 +62,7 @@ export async function getQAs(req: Request, res: Response): Promise<void> {
  */
 export async function submitQuestion(req: Request, res: Response): Promise<void> {
   try {
-    const { listingId } = req.params;
+    const listingId = req.params.listingId as string;
     const { question } = req.body;
     const askerId = req.user!.id;
 

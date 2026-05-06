@@ -36,24 +36,20 @@ import rentalRoutes from './routes/rentals';
 import paymentRoutes from './routes/payments';
 import reviewRoutes from './routes/reviews';
 import complaintRoutes from './routes/complaints';
+import messageRoutes from './routes/messages';
+import chatbotRoutes from './routes/chatbot';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
 app.use('/api/rentals', rentalRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/listings', reviewRoutes); // Reviews and Q&A are under /api/listings/:id/reviews and /api/listings/:id/qa
+app.use('/api/listings', reviewRoutes);
 app.use('/api/complaints', complaintRoutes);
-
-app.use('/api/messages', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Messages routes coming soon' });
-});
+app.use('/api/messages', messageRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 app.use('/api/admin', (req: Request, res: Response) => {
   res.status(501).json({ error: 'Not Implemented', message: 'Admin routes coming soon' });
-});
-
-app.use('/api/chatbot', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Chatbot routes coming soon' });
 });
 
 // 404 handler
