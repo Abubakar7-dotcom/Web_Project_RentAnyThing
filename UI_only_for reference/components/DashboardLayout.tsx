@@ -1,0 +1,152 @@
+import { useState } from 'react';
+import { Outlet, Link, useLocation } from 'react-router';
+import { Home, Grid, TrendingUp, PlusCircle, Info, Settings, Menu, ShoppingCart, X } from 'lucide-react';
+
+export function DashboardLayout() {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const location = useLocation();
+
+  const navItems = [
+    { icon: Home, label: 'Home', path: '/app' },
+    { icon: Grid, label: 'Categories', path: '/app/categories' },
+    { icon: TrendingUp, label: 'Popular', path: '/app/popular' },
+    { icon: PlusCircle, label: 'Rent Out', path: '/app/rent-out' },
+    { icon: Info, label: 'About', path: '/app/about' },
+    { icon: Settings, label: 'Settings', path: '/app/settings' },
+  ];
+
+  const isActive = (path: string) => {
+    if (path === '/app') {
+      return location.pathname === '/app';
+    }
+    return location.pathname.startsWith(path);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div
+        className="fixed left-0 top-0 bottom-0 bg-sidebar border-r border-sidebar-border z-40 transition-all duration-300 ease-in-out"
+        style={{ width: sidebarExpanded ? '240px' : '72px' }}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+      >
+        <div className="flex flex-col h-full">
+          <div className="p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+              <Menu className="w-5 h-5 text-white" />
+            </div>
+            <span
+              className="text-xl transition-opacity duration-200"
+              style={{ opacity: sidebarExpanded ? 1 : 0 }}
+            >
+              RentIt
+            </span>
+          </div>
+
+          <nav className="flex-1 px-3 py-4 space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                    active
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-accent'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span
+                    className="whitespace-nowrap transition-opacity duration-200"
+                    style={{ opacity: sidebarExpanded ? 1 : 0 }}
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      <div className="transition-all duration-300" style={{ marginLeft: sidebarExpanded ? '240px' : '72px' }}>
+        <Outlet />
+      </div>
+
+      <button
+        onClick={() => setCartOpen(true)}
+        className="fixed bottom-6 right-6 w-16 h-16 bg-primary hover:bg-primary/90 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center transition-all duration-200 hover:scale-110 z-30"
+      >
+        <ShoppingCart className="w-6 h-6 text-white" />
+        <span className="absolute -top-1 -right-1 w-6 h-6 bg-accent text-background rounded-full flex items-center justify-center text-xs">
+          3
+        </span>
+      </button>
+
+      {cartOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
+            onClick={() => setCartOpen(false)}
+          />
+          <div className="fixed right-0 top-0 bottom-0 w-96 bg-card border-l border-border z-50 p-6 shadow-2xl animate-slide-in-right">
+            <div className="flex items-center justify-between mb-6">
+              <h2>My Rentals</h2>
+              <button
+                onClick={() => setCartOpen(false)}
+                className="p-2 hover:bg-muted rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg">
+                <h4>Sony A7 III Camera</h4>
+                <p className="text-muted-foreground mt-1">$45/day</p>
+              </div>
+              <div className="p-4 bg-muted rounded-lg">
+                <h4>MacBook Pro 16"</h4>
+                <p className="text-muted-foreground mt-1">$55/day</p>
+              </div>
+              <div className="p-4 bg-muted rounded-lg">
+                <h4>DJI Mavic Air 2</h4>
+                <p className="text-muted-foreground mt-1">$35/day</p>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="flex justify-between mb-4">
+                <span className="text-muted-foreground">Total</span>
+                <span>$135/day</span>
+              </div>
+              <button className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg transition-colors">
+                Proceed to Checkout
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slide-in-right {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+        .animate-slide-in-right {
+          animation: slide-in-right 0.3s ease-out;
+        }
+      `}</style>
+    </div>
+  );
+}

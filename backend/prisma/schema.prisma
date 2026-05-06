@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum RentalStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum ComplaintStatus {
+  OPEN
+  RESOLVED
+}
+
+model User {
+  id                  String      @id @default(cuid())
+  name                String
+  email               String      @unique
+  password            String
+  role                Role        @default(USER)
+  isActive            Boolean     @default(true)
+  phone               String?
+  emailNotifications  Boolean     @default(true)
+  smsNotifications    Boolean     @default(false)
+  marketingEmails     Boolean     @default(true)
+  createdAt           DateTime    @default(now())
+  passwordResetToken  String?
+  passwordResetExpiry DateTime?
+  
+  listings            Listing[]
+  rentals             Rental[]    @relation("BorrowerRentals")
+  sentMessages        Message[]   @relation("SentMessages")
+  receivedMessages    Message[]   @relation("ReceivedMessages")
+  complaints          Complaint[] @relation("ReporterComplaints")
+  reportedComplaints  Complaint[] @relation("ReportedComplaints")
+  reviews             Review[]
+  qas                 QA[]
+}
+
+model Listing {
+  id            String    @id @default(cuid())
+  title         String
+  description   String
+  pricePerDay   Float
+  depositAmount Float     @default(0)
+  category      String
+  location      String
+  isAvailable   Boolean   @default(true)
+  isFeatured    Boolean   @default(false)
+  ownerId       String
+  createdAt     DateTime  @default(now())
+  
+  owner         User        @relation(fields: [ownerId], references: [id])
+  media         Media[]
+  rentals       Rental[]
+  messages      Message[]
+  complaints    Complaint[]
+  reviews       Review[]
+  qas           QA[]
+  
+  @@index([ownerId])
+}
+
+model Media {
+  id        String  @id @default(cuid())
+  listingId String
+  url       String
+  type      String  @default("image")
+  
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+}
+
+model Rental {
+  id         String       @id @default(cuid())
+  listingId  String
+  borrowerId String
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Float
+  status     RentalStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  
+  listing    Listing      @relation(fields: [listingId], references: [id])
+  borrower   User         @relation("BorrowerRentals", fields: [borrowerId], references: [id])
+  payment    Payment?
+  review     Review?
+  
+  @@index([borrowerId])
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  rentalId  String        @unique
+  amount    Float
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  
+  rental    Rental        @relation(fields: [rentalId], references: [id])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  listingId  String
+  content    String
+  createdAt  DateTime @default(now())
+  
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  
+  @@index([listingId])
+}
+
+model Complaint {
+  id             String          @id @default(cuid())
+  reporterId     String
+  reportedUserId String?
+  listingId      String?
+  description    String
+  status         ComplaintStatus @default(OPEN)
+  resolvedAt     DateTime?
+  createdAt      DateTime        @default(now())
+  
+  reporter       User            @relation("ReporterComplaints", fields: [reporterId], references: [id])
+  reportedUser   User?           @relation("ReportedComplaints", fields: [reportedUserId], references: [id])
+  listing        Listing?        @relation(fields: [listingId], references: [id])
+  
+  @@index([reporterId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  listingId  String
+  reviewerId String
+  rentalId   String   @unique
+  rating     Int
+  comment    String
+  createdAt  DateTime @default(now())
+  
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  reviewer   User     @relation(fields: [reviewerId], references: [id])
+  rental     Rental   @relation(fields: [rentalId], references: [id])
+}
+
+model QA {
+  id         String   @id @default(cuid())
+  listingId  String
+  askerId    String
+  question   String
+  answer     String?
+  answeredBy String?
+  createdAt  DateTime @default(now())
+  
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  asker      User     @relation(fields: [askerId], references: [id])
+}
