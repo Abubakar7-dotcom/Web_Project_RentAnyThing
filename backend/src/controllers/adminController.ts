@@ -159,7 +159,7 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
     }
 
     const user = await prisma.user.update({
-      where: { id },
+      where: { id: String(id) },
       data: updateData,
       select: {
         id: true,
@@ -189,13 +189,14 @@ export async function updateUser(req: Request, res: Response): Promise<void> {
 export async function deleteUser(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
+    const userId = String(id);
 
     // Check if user has active rentals
     const activeRentals = await prisma.rental.count({
       where: {
         OR: [
-          { borrowerId: id, status: { in: ['PENDING', 'ACTIVE'] } },
-          { listing: { ownerId: id }, status: { in: ['PENDING', 'ACTIVE'] } },
+          { borrowerId: userId, status: { in: ['PENDING', 'ACTIVE'] } },
+          { listing: { ownerId: userId }, status: { in: ['PENDING', 'ACTIVE'] } },
         ],
       },
     });
@@ -208,7 +209,7 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
     }
 
     await prisma.user.delete({
-      where: { id },
+      where: { id: userId },
     });
 
     res.status(200).json({ message: 'User deleted successfully' });
@@ -228,9 +229,10 @@ export async function deleteUser(req: Request, res: Response): Promise<void> {
 export async function toggleUserStatus(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
+    const userId = String(id);
 
     const user = await prisma.user.findUnique({
-      where: { id },
+      where: { id: userId },
       select: { isActive: true },
     });
 
@@ -240,7 +242,7 @@ export async function toggleUserStatus(req: Request, res: Response): Promise<voi
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id },
+      where: { id: userId },
       data: { isActive: !user.isActive },
       select: {
         id: true,

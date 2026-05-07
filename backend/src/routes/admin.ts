@@ -7,7 +7,7 @@ const router = Router();
 
 // All admin routes require authentication and admin role
 router.use(authenticate);
-router.use(authorize(['ADMIN']));
+router.use(authorize('ADMIN'));
 
 // Dashboard stats
 router.get('/stats', adminController.getDashboardStats);
