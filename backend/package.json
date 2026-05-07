@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node src/server.ts",
-    "build": "prisma generate && tsc",
+    "build": "npx prisma migrate deploy && prisma generate && tsc",
     "start": "node dist/server.js",
+    "deploy": "prisma migrate deploy",
     "test": "jest",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
