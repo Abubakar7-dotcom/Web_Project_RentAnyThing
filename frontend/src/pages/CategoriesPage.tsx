@@ -6,19 +6,52 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 interface Category {
   name: string;
   icon: string;
+  image: string;
   count: number;
 }
 
-// Static category definitions with icons
+// Static category definitions with icons and images
 const categoryDefinitions = [
-  { name: 'Electronics', icon: '📱' },
-  { name: 'Tools', icon: '🔧' },
-  { name: 'Sports', icon: '⚽' },
-  { name: 'Cameras', icon: '📷' },
-  { name: 'Gaming', icon: '🎮' },
-  { name: 'Music', icon: '🎸' },
-  { name: 'Outdoor', icon: '⛺' },
-  { name: 'Party', icon: '🎉' },
+  { 
+    name: 'Electronics', 
+    icon: '📱',
+    image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Tools', 
+    icon: '🔧',
+    image: 'https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Sports', 
+    icon: '⚽',
+    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Photography', 
+    icon: '📷',
+    image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Camping', 
+    icon: '⛺',
+    image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Music', 
+    icon: '🎸',
+    image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Party', 
+    icon: '🎉',
+    image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=300&fit=crop'
+  },
+  { 
+    name: 'Vehicles', 
+    icon: '🚗',
+    image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=300&fit=crop'
+  },
 ];
 
 export function CategoriesPage() {
@@ -92,13 +125,28 @@ export function CategoriesPage() {
           <button
             key={category.name}
             onClick={() => navigate(`/app?category=${encodeURIComponent(category.name)}`)}
-            className="group p-8 bg-card border border-border rounded-xl hover:border-accent transition-all duration-300 hover:shadow-xl hover:-translate-y-1 text-center"
+            className="group relative overflow-hidden bg-card border border-border rounded-xl hover:border-accent transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
           >
-            <div className="text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">
-              {category.icon}
+            {/* Background Image */}
+            <div className="relative h-48 overflow-hidden">
+              <img 
+                src={category.image} 
+                alt={category.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+              
+              {/* Icon Overlay */}
+              <div className="absolute top-4 right-4 text-4xl group-hover:scale-110 transition-transform duration-300">
+                {category.icon}
+              </div>
             </div>
-            <h3 className="text-xl font-semibold mb-2">{category.name}</h3>
-            <p className="text-muted-foreground">{category.count} items</p>
+            
+            {/* Content */}
+            <div className="p-6 text-left">
+              <h3 className="text-xl font-semibold mb-2 text-foreground">{category.name}</h3>
+              <p className="text-muted-foreground">{category.count} items available</p>
+            </div>
           </button>
         ))}
       </div>
