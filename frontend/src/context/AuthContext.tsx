@@ -69,14 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('[AuthContext] Logging in...');
       const { user: userData, token } = await authService.login({ email, password, rememberMe });
       console.log('[AuthContext] Login successful, user data:', userData);
-      setUser(userData);
-      setHasRememberMe(rememberMe || false);
       
-      // Store user and token in localStorage for session persistence
+      // Store user and token in localStorage FIRST (synchronous)
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('token', token);
       localStorage.setItem('rememberMe', String(rememberMe || false));
       console.log('[AuthContext] User data and token saved to localStorage');
+      
+      // Then update state
+      setUser(userData);
+      setHasRememberMe(rememberMe || false);
     } catch (error: any) {
       console.error('[AuthContext] Login failed:', error);
       throw error;
@@ -112,13 +114,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const { user: userData, token } = await authService.register({ name, email, password });
-      setUser(userData);
-      setHasRememberMe(false); // Registration doesn't have remember me
       
-      // Store user and token in localStorage for session persistence
+      // Store user and token in localStorage FIRST (synchronous)
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('token', token);
       localStorage.setItem('rememberMe', 'false');
+      
+      // Then update state
+      setUser(userData);
+      setHasRememberMe(false); // Registration doesn't have remember me
     } catch (error: any) {
       throw error;
     } finally {

@@ -49,6 +49,8 @@ export function AuthPage() {
       } else {
         await register(name, email, password);
       }
+      // Small delay to ensure token is saved to localStorage
+      await new Promise(resolve => setTimeout(resolve, 100));
       navigate('/app');
     } catch (error: any) {
       // Handle API errors
