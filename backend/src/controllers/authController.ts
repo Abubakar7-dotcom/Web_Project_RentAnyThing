@@ -16,7 +16,8 @@ export async function register(req: Request, res: Response): Promise<void> {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 30 * 60 * 1000,
     });
-    res.status(201).json({ user });
+    // Also send token in response for Authorization header fallback
+    res.status(201).json({ user, token });
   } catch (error: any) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({ error: error.message || 'Internal server error' });
@@ -40,7 +41,8 @@ export async function login(req: Request, res: Response): Promise<void> {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge,
     });
-    res.status(200).json({ user });
+    // Also send token in response for Authorization header fallback
+    res.status(200).json({ user, token });
   } catch (error: any) {
     const statusCode = error.statusCode || 500;
     res.status(statusCode).json({ error: error.message || 'Internal server error' });

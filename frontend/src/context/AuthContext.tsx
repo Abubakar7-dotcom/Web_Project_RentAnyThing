@@ -58,14 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string, rememberMe?: boolean) => {
     setIsLoading(true);
     try {
-      const userData = await authService.login({ email, password, rememberMe });
-      console.log('Login successful, user data:', userData);
+      const { user: userData, token } = await authService.login({ email, password, rememberMe });
+      console.log('Login successful, user data:', userData, 'token:', token ? 'received' : 'not received');
       setUser(userData);
       setHasRememberMe(rememberMe || false);
       
-      // Store user in localStorage for session persistence
+      // Store user and token in localStorage for session persistence
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('rememberMe', String(rememberMe || false));
+      if (token) {
+        localStorage.setItem('token', token);
+      }
       console.log('User stored in localStorage:', localStorage.getItem('user'));
     } catch (error: any) {
       console.error('Login error:', error);
@@ -85,12 +88,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear localStorage
       localStorage.removeItem('user');
       localStorage.removeItem('rememberMe');
+      localStorage.removeItem('token');
     } catch (error: any) {
       // Even if logout fails, clear local state
       setUser(null);
       setHasRememberMe(false);
       localStorage.removeItem('user');
       localStorage.removeItem('rememberMe');
+      localStorage.removeItem('token');
     } finally {
       setIsLoading(false);
     }
@@ -99,13 +104,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      const userData = await authService.register({ name, email, password });
+      const { user: userData, token } = await authService.register({ name, email, password });
       setUser(userData);
       setHasRememberMe(false); // Registration doesn't have remember me
       
-      // Store user in localStorage for session persistence
+      // Store user and token in localStorage for session persistence
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('rememberMe', 'false');
+      if (token) {
+        localStorage.setItem('token', token);
+      }
     } catch (error: any) {
       throw error;
     } finally {

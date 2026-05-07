@@ -11,12 +11,33 @@ const api = axios.create({
   },
 });
 
+// Request interceptor to add Authorization header
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor to handle 401 errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    console.error('API Error:', error.response?.status, error.response?.data);
+    
+    // Don't redirect to /auth if we're already on the auth page or during login/register
+    const isAuthPage = window.location.pathname === '/auth';
+    const isAuthRequest = error.config?.url?.includes('/auth/');
+    
+    if (error.response?.status === 401 && !isAuthPage && !isAuthRequest) {
+      console.log('401 error, redirecting to /auth');
       // Clear any local auth state and redirect to login
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
       window.location.href = '/auth';
     }
     return Promise.reject(error);
