@@ -62,3 +62,11 @@ export async function forgotPassword(data: ForgotPasswordData): Promise<void> {
 export async function resetPassword(data: ResetPasswordData): Promise<void> {
   await api.post('/auth/reset-password', data);
 }
+
+/**
+ * Verify if the current session is still valid
+ */
+export async function verifySession(): Promise<void> {
+  // Make a simple API call to check if the session cookie is valid
+  await api.get('/auth/socket-token');
+}

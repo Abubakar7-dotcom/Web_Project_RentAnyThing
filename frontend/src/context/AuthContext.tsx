@@ -27,15 +27,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    const checkSession = () => {
+    const checkSession = async () => {
       // Check localStorage for user data
       const storedUser = localStorage.getItem('user');
       const storedRememberMe = localStorage.getItem('rememberMe');
       
       if (storedUser) {
         try {
-          setUser(JSON.parse(storedUser));
-          setHasRememberMe(storedRememberMe === 'true');
+          const userData = JSON.parse(storedUser);
+          
+          // Verify the session is still valid by making a test API call
+          try {
+            await authService.verifySession();
+            setUser(userData);
+            setHasRememberMe(storedRememberMe === 'true');
+          } catch (error) {
+            // Session is invalid, clear localStorage
+            console.log('Session expired, clearing local storage');
+            localStorage.removeItem('user');
+            localStorage.removeItem('rememberMe');
+          }
         } catch (error) {
           console.error('Error parsing stored user:', error);
           localStorage.removeItem('user');

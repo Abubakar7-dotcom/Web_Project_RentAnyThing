@@ -16,8 +16,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear any local auth state and redirect to login
-      window.location.href = '/auth';
+      // Only redirect if we're not on the auth page already
+      if (!window.location.pathname.startsWith('/auth') && 
+          !window.location.pathname.startsWith('/forgot-password') &&
+          !window.location.pathname.startsWith('/reset-password')) {
+        // Clear any local auth state and redirect to login
+        localStorage.removeItem('user');
+        localStorage.removeItem('rememberMe');
+        window.location.href = '/auth';
+      }
     }
     return Promise.reject(error);
   }
