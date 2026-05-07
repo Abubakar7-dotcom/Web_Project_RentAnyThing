@@ -15,6 +15,7 @@ import { AuthPage } from './pages/AuthPage';
 
 // Lazy loaded pages
 const DashboardLayout = lazy(() => import('./layouts/DashboardLayout').then(m => ({ default: m.DashboardLayout })));
+const AdminLayout = lazy(() => import('./layouts/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage').then(m => ({ default: m.CategoriesPage })));
 const PopularPage = lazy(() => import('./pages/PopularPage').then(m => ({ default: m.PopularPage })));
@@ -72,7 +73,7 @@ function AppRoutes() {
         element={
           <AdminRoute>
             <Suspense fallback={<LoadingSpinner />}>
-              <DashboardLayout />
+              <AdminLayout />
             </Suspense>
           </AdminRoute>
         }
