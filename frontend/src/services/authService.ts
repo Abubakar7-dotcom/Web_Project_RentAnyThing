@@ -24,22 +24,23 @@ interface ResetPasswordData {
 
 interface AuthResponse {
   user: AuthUser;
+  token: string;
 }
 
 /**
  * Register a new user
  */
-export async function register(data: RegisterData): Promise<AuthUser> {
+export async function register(data: RegisterData): Promise<{ user: AuthUser; token: string }> {
   const response = await api.post<AuthResponse>('/auth/register', data);
-  return response.data.user;
+  return { user: response.data.user, token: response.data.token };
 }
 
 /**
  * Login a user
  */
-export async function login(data: LoginData): Promise<AuthUser> {
+export async function login(data: LoginData): Promise<{ user: AuthUser; token: string }> {
   const response = await api.post<AuthResponse>('/auth/login', data);
-  return response.data.user;
+  return { user: response.data.user, token: response.data.token };
 }
 
 /**

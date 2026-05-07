@@ -11,14 +11,19 @@ declare global {
 }
 
 /**
- * Middleware to authenticate requests using JWT from HTTP-only cookie
+ * Middleware to authenticate requests using JWT from HTTP-only cookie or Authorization header
  * Attaches user payload to req.user if valid
  * Returns 401 if token is missing or invalid
  */
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
   try {
-    // Read JWT from cookie
-    const token = req.cookies.jwt;
+    // Try to read JWT from Authorization header first, then fall back to cookie
+    let token = req.cookies.jwt;
+    
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    }
 
     if (!token) {
       res.status(401).json({ error: 'Authentication required' });
