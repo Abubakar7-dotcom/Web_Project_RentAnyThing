@@ -49,9 +49,10 @@ export function AuthPage() {
       } else {
         await register(name, email, password);
       }
-      // Small delay to ensure token is saved to localStorage
-      await new Promise(resolve => setTimeout(resolve, 100));
-      navigate('/app');
+      // Use replace to avoid back button issues and add small delay for state to settle
+      setTimeout(() => {
+        navigate('/app', { replace: true });
+      }, 100);
     } catch (error: any) {
       // Handle API errors
       if (error.response?.data?.errors) {

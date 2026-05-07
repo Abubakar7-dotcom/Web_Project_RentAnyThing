@@ -24,23 +24,22 @@ interface ResetPasswordData {
 
 interface AuthResponse {
   user: AuthUser;
-  token: string;
 }
 
 /**
  * Register a new user
  */
-export async function register(data: RegisterData): Promise<{ user: AuthUser; token: string }> {
+export async function register(data: RegisterData): Promise<AuthUser> {
   const response = await api.post<AuthResponse>('/auth/register', data);
-  return { user: response.data.user, token: response.data.token };
+  return response.data.user;
 }
 
 /**
  * Login a user
  */
-export async function login(data: LoginData): Promise<{ user: AuthUser; token: string }> {
+export async function login(data: LoginData): Promise<AuthUser> {
   const response = await api.post<AuthResponse>('/auth/login', data);
-  return { user: response.data.user, token: response.data.token };
+  return response.data.user;
 }
 
 /**
@@ -62,12 +61,4 @@ export async function forgotPassword(data: ForgotPasswordData): Promise<void> {
  */
 export async function resetPassword(data: ResetPasswordData): Promise<void> {
   await api.post('/auth/reset-password', data);
-}
-
-/**
- * Verify if the current session is still valid
- */
-export async function verifySession(): Promise<void> {
-  // Make a simple API call to check if the session cookie is valid
-  await api.get('/auth/socket-token');
 }

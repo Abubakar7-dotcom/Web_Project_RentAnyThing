@@ -27,28 +27,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    const checkSession = async () => {
-      console.log('[AuthContext] Checking session...');
+    const checkSession = () => {
       // Check localStorage for user data
       const storedUser = localStorage.getItem('user');
       const storedRememberMe = localStorage.getItem('rememberMe');
       
-      console.log('[AuthContext] Stored user:', storedUser ? 'exists' : 'none');
-      
       if (storedUser) {
         try {
-          const userData = JSON.parse(storedUser);
-          console.log('[AuthContext] Setting user from localStorage:', userData);
-          
-          // For now, trust localStorage - cookies might not work cross-origin
-          // TODO: Implement proper token-based auth for production
-          setUser(userData);
+          setUser(JSON.parse(storedUser));
           setHasRememberMe(storedRememberMe === 'true');
-          
-          // Optionally verify session in background (don't block UI)
-          authService.verifySession().catch(() => {
-            console.log('Session verification failed, but keeping user logged in from localStorage');
-          });
         } catch (error) {
           console.error('Error parsing stored user:', error);
           localStorage.removeItem('user');
@@ -57,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       setIsLoading(false);
-      console.log('[AuthContext] Session check complete');
     };
 
     checkSession();
@@ -66,21 +52,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string, rememberMe?: boolean) => {
     setIsLoading(true);
     try {
-      console.log('[AuthContext] Logging in...');
-      const { user: userData, token } = await authService.login({ email, password, rememberMe });
-      console.log('[AuthContext] Login successful, user data:', userData);
-      
-      // Store user and token in localStorage FIRST (synchronous)
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', token);
-      localStorage.setItem('rememberMe', String(rememberMe || false));
-      console.log('[AuthContext] User data and token saved to localStorage');
-      
-      // Then update state
+      const userData = await authService.login({ email, password, rememberMe });
       setUser(userData);
       setHasRememberMe(rememberMe || false);
+      
+      // Store user in localStorage for session persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('rememberMe', String(rememberMe || false));
     } catch (error: any) {
-      console.error('[AuthContext] Login failed:', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -96,14 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Clear localStorage
       localStorage.removeItem('user');
-      localStorage.removeItem('token');
       localStorage.removeItem('rememberMe');
     } catch (error: any) {
       // Even if logout fails, clear local state
       setUser(null);
       setHasRememberMe(false);
       localStorage.removeItem('user');
-      localStorage.removeItem('token');
       localStorage.removeItem('rememberMe');
     } finally {
       setIsLoading(false);
@@ -113,16 +90,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { user: userData, token } = await authService.register({ name, email, password });
-      
-      // Store user and token in localStorage FIRST (synchronous)
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', token);
-      localStorage.setItem('rememberMe', 'false');
-      
-      // Then update state
+      const userData = await authService.register({ name, email, password });
       setUser(userData);
       setHasRememberMe(false); // Registration doesn't have remember me
+      
+      // Store user in localStorage for session persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('rememberMe', 'false');
     } catch (error: any) {
       throw error;
     } finally {

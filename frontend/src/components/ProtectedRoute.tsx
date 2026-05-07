@@ -9,17 +9,13 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
 
-  console.log('[ProtectedRoute] isLoading:', isLoading, 'user:', user ? 'exists' : 'none');
-
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
   if (!user) {
-    console.log('[ProtectedRoute] No user, redirecting to /auth');
     return <Navigate to="/auth" replace />;
   }
 
-  console.log('[ProtectedRoute] User authenticated, rendering children');
   return <>{children}</>;
 }
