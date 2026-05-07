@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail } from '../utils/validateEmail';
 import { getPasswordErrors } from '../utils/validatePassword';
+import { Footer } from '../components/Footer';
 
 export function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -68,49 +69,50 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1574962325789-fbe9cbcfacf0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
-            alt="Community sharing"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/80 to-accent/20" />
-        </div>
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-accent rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-secondary rounded-full blur-3xl animate-pulse" />
-        </div>
-        <div className="relative z-10 text-white">
-          <h1 className="text-5xl font-bold mb-6">Welcome to RentIt</h1>
-          <p className="text-xl opacity-90 mb-8">
-            Your marketplace for renting and sharing items with your community.
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-2xl">
-                ✓
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex-1 flex">
+        <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center p-12 overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1574962325789-fbe9cbcfacf0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+              alt="Community sharing"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-primary/80 to-accent/20" />
+          </div>
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-10 left-10 w-64 h-64 bg-accent rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-secondary rounded-full blur-3xl animate-pulse" />
+          </div>
+          <div className="relative z-10 text-white">
+            <h1 className="text-5xl font-bold mb-6">Welcome to RentIt</h1>
+            <p className="text-xl opacity-90 mb-8">
+              Your marketplace for renting and sharing items with your community.
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-2xl">
+                  ✓
+                </div>
+                <span className="text-lg">Thousands of items available</span>
               </div>
-              <span className="text-lg">Thousands of items available</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-2xl">
-                ✓
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-2xl">
+                  ✓
+                </div>
+                <span className="text-lg">Earn money from unused items</span>
               </div>
-              <span className="text-lg">Earn money from unused items</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-2xl">
-                ✓
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-2xl">
+                  ✓
+                </div>
+                <span className="text-lg">Secure and trusted platform</span>
               </div>
-              <span className="text-lg">Secure and trusted platform</span>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <Link
             to="/"
@@ -228,6 +230,8 @@ export function AuthPage() {
           </div>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

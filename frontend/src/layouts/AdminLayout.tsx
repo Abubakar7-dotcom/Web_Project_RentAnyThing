@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Footer } from '../components/Footer';
 
 export function AdminLayout() {
   const location = useLocation();
@@ -11,7 +12,7 @@ export function AdminLayout() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Admin Header */}
       <div className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-8 py-4">
@@ -59,9 +60,13 @@ export function AdminLayout() {
       </div>
 
       {/* Admin Content */}
-      <div className="max-w-7xl mx-auto">
-        <Outlet />
+      <div className="flex-1">
+        <div className="max-w-7xl mx-auto">
+          <Outlet />
+        </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

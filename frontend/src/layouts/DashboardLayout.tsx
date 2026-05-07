@@ -1,20 +1,33 @@
 import { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Grid, TrendingUp, PlusCircle, Calendar, Info, Settings, Menu, ShoppingCart, X, Shield } from 'lucide-react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Grid, TrendingUp, PlusCircle, Calendar, Info, Settings, Menu, ShoppingCart, X, Shield, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
+import { Footer } from '../components/Footer';
 
 export function DashboardLayout() {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { items, removeItem, total, itemCount } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   
   // Enable inactivity timer (30 min timeout)
   // Note: hasRememberMe is set to false for now - in production, you'd check the cookie max-age
   useInactivityTimer(!!user, false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still navigate to landing page even if logout fails
+      navigate('/');
+    }
+  };
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/app' },
@@ -36,13 +49,14 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen bg-background">
       <div
-        className="fixed left-0 top-0 bottom-0 bg-sidebar border-r border-sidebar-border z-40 transition-all duration-300 ease-in-out"
+        className="fixed left-0 top-0 bottom-0 bg-sidebar border-r border-sidebar-border z-40 transition-all duration-300 ease-in-out overflow-hidden"
         style={{ width: sidebarExpanded ? '240px' : '72px' }}
         onMouseEnter={() => setSidebarExpanded(true)}
         onMouseLeave={() => setSidebarExpanded(false)}
       >
         <div className="flex flex-col h-full">
-          <div className="p-4 flex items-center gap-3">
+          {/* Fixed header */}
+          <div className="p-4 flex items-center gap-3 flex-shrink-0">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
               <Menu className="w-5 h-5 text-white" />
             </div>
@@ -54,7 +68,8 @@ export function DashboardLayout() {
             </span>
           </div>
 
-          <nav className="flex-1 px-3 py-4 space-y-2">
+          {/* Scrollable navigation */}
+          <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-sidebar-accent scrollbar-track-transparent">
             {navItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
@@ -80,34 +95,60 @@ export function DashboardLayout() {
             })}
           </nav>
 
-          {/* Admin link — only visible to admins */}
-          {user?.role === 'ADMIN' && (
+          {/* Fixed footer with admin and logout */}
+          <div className="flex-shrink-0">
+            {/* Admin link — only visible to admins */}
+            {user?.role === 'ADMIN' && (
+              <div className="px-3 pb-2">
+                <div className="border-t border-sidebar-border pt-4">
+                  <Link
+                    to="/admin"
+                    className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                      location.pathname.startsWith('/admin')
+                        ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-accent'
+                    }`}
+                  >
+                    <Shield className="w-5 h-5 flex-shrink-0" />
+                    <span
+                      className="whitespace-nowrap transition-opacity duration-200 font-medium"
+                      style={{ opacity: sidebarExpanded ? 1 : 0 }}
+                    >
+                      Admin Panel
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Logout button */}
             <div className="px-3 pb-4">
-              <div className="border-t border-sidebar-border pt-4">
-                <Link
-                  to="/admin"
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-                    location.pathname.startsWith('/admin')
-                      ? 'bg-accent text-white shadow-lg shadow-accent/20'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-accent'
-                  }`}
+              <div className={`${user?.role === 'ADMIN' ? '' : 'border-t border-sidebar-border pt-4'}`}>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
-                  <Shield className="w-5 h-5 flex-shrink-0" />
+                  <LogOut className="w-5 h-5 flex-shrink-0" />
                   <span
                     className="whitespace-nowrap transition-opacity duration-200 font-medium"
                     style={{ opacity: sidebarExpanded ? 1 : 0 }}
                   >
-                    Admin Panel
+                    Logout
                   </span>
-                </Link>
+                </button>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
       <div className="transition-all duration-300" style={{ marginLeft: sidebarExpanded ? '240px' : '72px' }}>
-        <Outlet />
+        <div className="min-h-screen flex flex-col">
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <Footer />
+        </div>
       </div>
 
       <button
