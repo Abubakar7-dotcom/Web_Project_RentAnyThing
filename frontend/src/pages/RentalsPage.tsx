@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { rentalService, type Rental } from '../services/rentalService';
 import { paymentService } from '../services/paymentService';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { PaymentModal } from '../components/PaymentModal';
 
 const statusConfig = {
   PENDING: { color: 'text-yellow-600 bg-yellow-50 border-yellow-200', label: 'Pending', icon: Clock },
@@ -20,6 +21,8 @@ export function RentalsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedRental, setSelectedRental] = useState<Rental | null>(null);
 
   useEffect(() => {
     fetchRentals();
@@ -81,16 +84,22 @@ export function RentalsPage() {
   };
 
   const handlePay = async (rentalId: string) => {
+    const rental = rentals.find(r => r.id === rentalId);
+    if (rental) {
+      setSelectedRental(rental);
+      setPaymentModalOpen(true);
+    }
+  };
+
+  const handlePaymentConfirm = async () => {
+    if (!selectedRental) return;
+    
     try {
-      setActionLoading(rentalId);
-      await paymentService.pay(rentalId);
+      await paymentService.pay(selectedRental.id);
       await fetchRentals(); // Refresh the list
-      alert('Payment processed successfully!');
     } catch (err: any) {
       console.error('Error processing payment:', err);
-      alert(err.response?.data?.error || 'Failed to process payment');
-    } finally {
-      setActionLoading(null);
+      throw err; // Let the modal handle the error
     }
   };
 
@@ -268,6 +277,24 @@ export function RentalsPage() {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      {selectedRental && (
+        <PaymentModal
+          isOpen={paymentModalOpen}
+          onClose={() => {
+            setPaymentModalOpen(false);
+            setSelectedRental(null);
+          }}
+          onConfirm={handlePaymentConfirm}
+          amount={selectedRental.totalPrice}
+          rentalDetails={{
+            itemName: selectedRental.listing.title,
+            startDate: selectedRental.startDate,
+            endDate: selectedRental.endDate,
+          }}
+        />
+      )}
     </div>
   );
 }
