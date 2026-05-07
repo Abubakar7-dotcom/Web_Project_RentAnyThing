@@ -57,6 +57,7 @@ import reviewRoutes from './routes/reviews';
 import complaintRoutes from './routes/complaints';
 import messageRoutes from './routes/messages';
 import chatbotRoutes from './routes/chatbot';
+import adminRoutes from './routes/admin';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/listings', listingRoutes);
@@ -66,10 +67,7 @@ app.use('/api/listings', reviewRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/chatbot', chatbotRoutes);
-
-app.use('/api/admin', (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Not Implemented', message: 'Admin routes coming soon' });
-});
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
