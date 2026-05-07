@@ -45,15 +45,20 @@ export function AuthPage() {
 
     try {
       if (isLogin) {
+        console.log('Attempting login...');
         await login(email, password, rememberMe);
+        console.log('Login completed, navigating to /app');
       } else {
+        console.log('Attempting registration...');
         await register(name, email, password);
+        console.log('Registration completed, navigating to /app');
       }
       // Use replace to avoid back button issues and add small delay for state to settle
       setTimeout(() => {
         navigate('/app', { replace: true });
       }, 100);
     } catch (error: any) {
+      console.error('Auth error:', error);
       // Handle API errors
       if (error.response?.data?.errors) {
         // Field-level validation errors from backend

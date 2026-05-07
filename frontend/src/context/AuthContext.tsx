@@ -32,15 +32,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem('user');
       const storedRememberMe = localStorage.getItem('rememberMe');
       
+      console.log('Checking session - stored user:', storedUser);
+      
       if (storedUser) {
         try {
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+          console.log('Parsed user from localStorage:', parsedUser);
+          setUser(parsedUser);
           setHasRememberMe(storedRememberMe === 'true');
         } catch (error) {
           console.error('Error parsing stored user:', error);
           localStorage.removeItem('user');
           localStorage.removeItem('rememberMe');
         }
+      } else {
+        console.log('No user found in localStorage');
       }
       
       setIsLoading(false);
@@ -53,13 +59,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const userData = await authService.login({ email, password, rememberMe });
+      console.log('Login successful, user data:', userData);
       setUser(userData);
       setHasRememberMe(rememberMe || false);
       
       // Store user in localStorage for session persistence
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('rememberMe', String(rememberMe || false));
+      console.log('User stored in localStorage:', localStorage.getItem('user'));
     } catch (error: any) {
+      console.error('Login error:', error);
       throw error;
     } finally {
       setIsLoading(false);
