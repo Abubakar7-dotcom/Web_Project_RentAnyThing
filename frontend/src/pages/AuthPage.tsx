@@ -210,9 +210,9 @@ export function AuthPage() {
                     />
                     <span className="text-sm">Remember Me</span>
                   </label>
-                  <button type="button" className="text-sm text-accent hover:underline">
+                  <Link to="/forgot-password" className="text-sm text-accent hover:underline">
                     Forgot password?
-                  </button>
+                  </Link>
                 </div>
               )}
 
