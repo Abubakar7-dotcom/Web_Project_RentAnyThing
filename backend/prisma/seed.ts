@@ -406,6 +406,32 @@ async function main() {
       },
     },
     {
+      listingId: createdListings[1].id, // DJI Drone
+      borrowerId: john.id,
+      startDate: new Date('2024-03-10'),
+      endDate: new Date('2024-03-12'),
+      totalPrice: 190,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Incredible drone! Got stunning aerial footage for my project. Sarah provided great tips on flying it. Worth every penny!',
+        reviewerId: john.id,
+      },
+    },
+    {
+      listingId: createdListings[2].id, // GoPro
+      borrowerId: emma.id,
+      startDate: new Date('2024-02-05'),
+      endDate: new Date('2024-02-07'),
+      totalPrice: 60,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Perfect for my skiing trip! Waterproof and easy to use. All the mounts were included. Highly recommend!',
+        reviewerId: emma.id,
+      },
+    },
+    {
       listingId: createdListings[3].id, // Mountain Bike
       borrowerId: mike.id,
       startDate: new Date('2024-02-01'),
@@ -416,6 +442,32 @@ async function main() {
         rating: 5,
         comment: 'Great bike for the trails! Smooth ride and well-maintained. The owner was flexible with pickup time. Highly recommend!',
         reviewerId: mike.id,
+      },
+    },
+    {
+      listingId: createdListings[4].id, // Surfboard
+      borrowerId: david.id,
+      startDate: new Date('2024-03-20'),
+      endDate: new Date('2024-03-22'),
+      totalPrice: 50,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 4,
+        comment: 'Good beginner board. Helped me learn the basics. Only wish it came with wax, but overall great experience!',
+        reviewerId: david.id,
+      },
+    },
+    {
+      listingId: createdListings[5].id, // Kayak
+      borrowerId: sarah.id,
+      startDate: new Date('2024-04-01'),
+      endDate: new Date('2024-04-03'),
+      totalPrice: 80,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Fantastic kayak for two! Easy to inflate and very stable on the water. Had an amazing time exploring the lake!',
+        reviewerId: sarah.id,
       },
     },
     {
@@ -432,6 +484,32 @@ async function main() {
       },
     },
     {
+      listingId: createdListings[7].id, // Camping Stove
+      borrowerId: john.id,
+      startDate: new Date('2024-03-15'),
+      endDate: new Date('2024-03-17'),
+      totalPrice: 30,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Reliable stove that worked perfectly throughout our camping trip. Cooked all our meals without any issues!',
+        reviewerId: john.id,
+      },
+    },
+    {
+      listingId: createdListings[8].id, // Sleeping Bags
+      borrowerId: mike.id,
+      startDate: new Date('2024-01-20'),
+      endDate: new Date('2024-01-22'),
+      totalPrice: 40,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Warm and comfortable sleeping bags! Kept us cozy even in 25°F weather. Great quality for the price!',
+        reviewerId: mike.id,
+      },
+    },
+    {
       listingId: createdListings[9].id, // Power Drill
       borrowerId: john.id,
       startDate: new Date('2024-02-20'),
@@ -442,6 +520,32 @@ async function main() {
         rating: 5,
         comment: 'Exactly what I needed for my home project. Powerful drill with all the bits I needed. Great value!',
         reviewerId: john.id,
+      },
+    },
+    {
+      listingId: createdListings[10].id, // Pressure Washer
+      borrowerId: sarah.id,
+      startDate: new Date('2024-03-25'),
+      endDate: new Date('2024-03-26'),
+      totalPrice: 35,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Powerful washer! Cleaned my driveway in half the time I expected. Easy to use and very effective!',
+        reviewerId: sarah.id,
+      },
+    },
+    {
+      listingId: createdListings[11].id, // Ladder
+      borrowerId: emma.id,
+      startDate: new Date('2024-04-10'),
+      endDate: new Date('2024-04-11'),
+      totalPrice: 25,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 4,
+        comment: 'Sturdy ladder that made painting my house much easier. A bit heavy to move around but very stable.',
+        reviewerId: emma.id,
       },
     },
     {
@@ -458,20 +562,33 @@ async function main() {
       },
     },
     {
-      listingId: createdListings[1].id, // DJI Drone
-      borrowerId: john.id,
-      startDate: new Date('2024-03-10'),
-      endDate: new Date('2024-03-12'),
-      totalPrice: 190,
+      listingId: createdListings[13].id, // DJ Controller
+      borrowerId: mike.id,
+      startDate: new Date('2024-02-14'),
+      endDate: new Date('2024-02-15'),
+      totalPrice: 55,
       status: 'COMPLETED' as const,
       review: {
         rating: 5,
-        comment: 'Incredible drone! Got stunning aerial footage for my project. Sarah provided great tips on flying it. Worth every penny!',
+        comment: 'Professional equipment! Used it for a Valentine\'s party and everyone loved the music. Easy to set up and use!',
+        reviewerId: mike.id,
+      },
+    },
+    {
+      listingId: createdListings[14].id, // Keyboard
+      borrowerId: john.id,
+      startDate: new Date('2024-01-10'),
+      endDate: new Date('2024-01-12'),
+      totalPrice: 70,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Excellent keyboard with realistic piano feel. Perfect for practice before buying my own. Highly recommend!',
         reviewerId: john.id,
       },
     },
     {
-      listingId: createdListings[16].id, // PS5
+      listingId: createdListings[15].id, // PS5
       borrowerId: sarah.id,
       startDate: new Date('2024-03-15'),
       endDate: new Date('2024-03-17'),
@@ -484,7 +601,20 @@ async function main() {
       },
     },
     {
-      listingId: createdListings[18].id, // Party Speaker
+      listingId: createdListings[16].id, // Projector
+      borrowerId: emma.id,
+      startDate: new Date('2024-04-05'),
+      endDate: new Date('2024-04-06'),
+      totalPrice: 60,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Amazing movie night experience! 4K quality was stunning. Setup was easy and the screen was included. Perfect!',
+        reviewerId: emma.id,
+      },
+    },
+    {
+      listingId: createdListings[17].id, // Party Speaker
       borrowerId: mike.id,
       startDate: new Date('2024-04-01'),
       endDate: new Date('2024-04-02'),
@@ -494,6 +624,45 @@ async function main() {
         rating: 5,
         comment: 'Made our party amazing! Sound quality was incredible and the lights added great atmosphere. Easy to set up too!',
         reviewerId: mike.id,
+      },
+    },
+    {
+      listingId: createdListings[18].id, // Karaoke Machine
+      borrowerId: david.id,
+      startDate: new Date('2024-03-08'),
+      endDate: new Date('2024-03-09'),
+      totalPrice: 40,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'So much fun! Huge song library and great sound quality. Everyone at the party had a blast singing!',
+        reviewerId: david.id,
+      },
+    },
+    {
+      listingId: createdListings[19].id, // Photo Booth
+      borrowerId: sarah.id,
+      startDate: new Date('2024-02-28'),
+      endDate: new Date('2024-03-01'),
+      totalPrice: 55,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 5,
+        comment: 'Perfect for our wedding! Guests loved taking photos with all the props. Created amazing memories!',
+        reviewerId: sarah.id,
+      },
+    },
+    {
+      listingId: createdListings[20].id, // Cargo Van
+      borrowerId: john.id,
+      startDate: new Date('2024-04-15'),
+      endDate: new Date('2024-04-16'),
+      totalPrice: 85,
+      status: 'COMPLETED' as const,
+      review: {
+        rating: 4,
+        comment: 'Spacious van that made moving easy. Clean and reliable. Only issue was the gas mileage, but expected for a van.',
+        reviewerId: john.id,
       },
     },
   ];
