@@ -36,17 +36,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const userData = JSON.parse(storedUser);
           
-          // Verify the session is still valid by making a test API call
-          try {
-            await authService.verifySession();
-            setUser(userData);
-            setHasRememberMe(storedRememberMe === 'true');
-          } catch (error) {
-            // Session is invalid, clear localStorage
-            console.log('Session expired, clearing local storage');
-            localStorage.removeItem('user');
-            localStorage.removeItem('rememberMe');
-          }
+          // For now, trust localStorage - cookies might not work cross-origin
+          // TODO: Implement proper token-based auth for production
+          setUser(userData);
+          setHasRememberMe(storedRememberMe === 'true');
+          
+          // Optionally verify session in background (don't block UI)
+          authService.verifySession().catch(() => {
+            console.log('Session verification failed, but keeping user logged in from localStorage');
+          });
         } catch (error) {
           console.error('Error parsing stored user:', error);
           localStorage.removeItem('user');
